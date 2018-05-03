@@ -3,6 +3,6 @@ from bs4 import BeautifulSoup
 
 html = urlopen('http://www.pythonscraping.com/pages/warandpeace.html')
 bsObj = BeautifulSoup(html, 'lxml')
-result = bsObj.findAll('span', {'class': 'red'})
+result = bsObj.findAll('span', {'class': 'green'})
 for item in result:
     print(item)
