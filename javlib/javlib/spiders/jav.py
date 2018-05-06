@@ -7,4 +7,4 @@ class JavLibSpy(scrapy.Spider):
     start_urls = ['https://hao.360.cn']
 
     def parse(self, response):
-        yield {'title': response.url}
+        yield {'url': response.url}

@@ -10,4 +10,4 @@ import scrapy
 
 class JavlibItem(scrapy.Item):
     # define the fields for your item here like:
-    addr = scrapy.Field()
+    name = scrapy.Field()
