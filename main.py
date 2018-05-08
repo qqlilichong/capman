@@ -40,6 +40,7 @@ def http_download(url, filename):
     with open(filename, 'wb') as file:
         for chunk in resp.iter_content(1024 * 64):
             file.write(chunk)
+    return True
 
 
 ######################################################
@@ -53,11 +54,11 @@ for item in bsObj.findAll('div', {'class': 'image-view'}):
     if not img:
         continue
 
-    img_name = re.match('//upload-images.jianshu.io/upload_images/(.*)$', img['data-original-src'])
-    if len(img_name[1]) == 0:
+    img_name = re.search('//upload-images.jianshu.io/upload_images/(.*)$', img['data-original-src'])
+    if not img_name:
         continue
 
-    print(img_templ % img_name[1])
+    print(img_name.group(1))
 
 
 ######################################################
