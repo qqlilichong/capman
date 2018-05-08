@@ -1,6 +1,7 @@
 
 ######################################################
 
+import re
 import requests
 from bs4 import BeautifulSoup
 
@@ -27,19 +28,36 @@ def http_get(url):
         headers={
             'User-Agent': HEADERS_UA,
         },
-        proxies=HTTP_PROXY,
+        #proxies=HTTP_PROXY,
     )
+
+
+def http_download(url, filename):
+    resp = http_get(url)
+    if not resp:
+        return False
+
+    with open(filename, 'wb') as file:
+        for chunk in resp.iter_content(1024 * 64):
+            file.write(chunk)
 
 
 ######################################################
 
 
-html = http_get('http://hao360.cn')
-html.encoding = 'gbk'
+img_templ = 'https://upload-images.jianshu.io/upload_images/%s?imageMogr2/auto-orient/strip|imageView2/2/w/700'
+html = http_get('https://www.jianshu.com/p/3d1eb40187ad')
 bsObj = BeautifulSoup(html.text, 'html5lib')
-result = bsObj.findAll('div')
-for item in result:
-    print(item)
+for item in bsObj.findAll('div', {'class': 'image-view'}):
+    img = item.find('img')
+    if not img:
+        continue
+
+    img_name = re.match('//upload-images.jianshu.io/upload_images/(.*)$', img['data-original-src'])
+    if len(img_name[1]) == 0:
+        continue
+
+    print(img_templ % img_name[1])
 
 
 ######################################################
