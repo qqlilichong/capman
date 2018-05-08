@@ -9,18 +9,22 @@
 #     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
-#LOG_LEVEL = 'ERROR'
+LOG_LEVEL = 'ERROR'
 BOT_NAME = 'javlib'
 
 SPIDER_MODULES = ['javlib.spiders']
 NEWSPIDER_MODULE = 'javlib.spiders'
 
+IMAGES_STORE = 'y:/images'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'javlib (+http://www.yourdomain.com)'
+USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1; WOW64) ' \
+             'AppleWebKit/537.36 (KHTML, like Gecko) ' \
+             'Chrome/53.0.2785.104 Safari/537.36 Core/1.53.4843.400 ' \
+             'QQBrowser/9.7.13021.400'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -65,9 +69,9 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'javlib.pipelines.JavlibPipeline': 300,
-#}
+ITEM_PIPELINES = {
+    'javlib.pipelines.JavlibPipeline': 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html

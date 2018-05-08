@@ -7,13 +7,13 @@
 
 #################################################################
 
-import scrapy
+#import scrapy
 
 #################################################################
 
 
-class JavlibItem(scrapy.Item):
-    name = scrapy.Field()
+#class JavlibItem(scrapy.Item):
+#    name = scrapy.Field()
 
 
 #################################################################
