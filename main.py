@@ -1,8 +1,8 @@
 
 ######################################################
 
-import re
 import requests
+from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 
 ######################################################
@@ -28,7 +28,7 @@ def http_get(url):
         headers={
             'User-Agent': HEADERS_UA,
         },
-        #proxies=HTTP_PROXY,
+        proxies=HTTP_PROXY,
     )
 
 
@@ -46,19 +46,57 @@ def http_download(url, filename):
 ######################################################
 
 
-img_templ = 'https://upload-images.jianshu.io/upload_images/%s?imageMogr2/auto-orient/strip|imageView2/2/w/700'
-html = http_get('https://www.jianshu.com/p/3d1eb40187ad')
-bsObj = BeautifulSoup(html.text, 'html5lib')
-for item in bsObj.findAll('div', {'class': 'image-view'}):
-    img = item.find('img')
-    if not img:
-        continue
+class JavLibDetail:
 
-    img_name = re.search('//upload-images.jianshu.io/upload_images/(.*)$', img['data-original-src'])
-    if not img_name:
-        continue
+    ######################################################
 
-    print(img_name.group(1))
+    def __init__(self, url):
+        self.bs = None
+        self.url = url
+
+        resp = http_get(url)
+        if resp:
+            self.bs = BeautifulSoup(resp.text, 'html5lib')
+
+    ######################################################
+
+    def id(self):
+        if not self.bs:
+            return None
+
+        finder = self.bs.find('div', {
+            'id': 'video_id',
+            'class': 'item',
+        })
+        if not finder:
+            return None
+
+        finder = finder.find('td', {
+            'class': 'text',
+        })
+        if not finder:
+            return None
+
+        return finder.string
+
+    ######################################################
+
+    def preview(self):
+        if not self.bs:
+            return None
+
+        finder = self.bs.find('img', {
+            'id': 'video_jacket_img'
+        })
+        if not finder:
+            return None
+
+        if not finder.has_attr('src'):
+            return None
+
+        return urljoin(self.url, finder['src'])
+
+    ######################################################
 
 
 ######################################################
