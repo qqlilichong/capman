@@ -12,16 +12,15 @@ HEADERS_UA = 'Mozilla/5.0 (Windows NT 6.1; WOW64) ' \
              'QQBrowser/9.7.13021.400'
 
 HTTP_PROXY = {
-    #'http': '192.168.200.1:1080',
-    #'https': '192.168.200.1:1080',
+    'http': '192.168.200.1:1080',
+    'https': '192.168.200.1:1080',
 
-    'http': '127.0.0.1:1080',
-    'https': '127.0.0.1:1080',
+    #'http': '127.0.0.1:1080',
+    #'https': '127.0.0.1:1080',
 }
 
 ######################################################
-
-
+# HTTP GET.
 def http_get(url):
     return requests.get(
         url,
@@ -31,10 +30,8 @@ def http_get(url):
         proxies=HTTP_PROXY,
     )
 
-
 ######################################################
-
-
+# HTTP GET and Save Content.
 def http_download(url, filename):
     resp = http_get(url)
     if not resp:
@@ -44,12 +41,9 @@ def http_download(url, filename):
         file.write(resp.content)
     return True
 
-
 ######################################################
-
-
+# Join path and url to uri.
 def http_urljoin(path, url):
     return urllib.parse.urljoin(path, url)
-
 
 ######################################################
