@@ -2,45 +2,27 @@
 ######################################################
 
 import re
-import requests
-from urllib.parse import urljoin
+
+from webtools import \
+    http_get, \
+    http_download, \
+    http_urljoin \
+
 from bs4 import BeautifulSoup
 
 ######################################################
 
 
-HEADERS_UA = 'Mozilla/5.0 (Windows NT 6.1; WOW64) ' \
-             'AppleWebKit/537.36 (KHTML, like Gecko) ' \
-             'Chrome/53.0.2785.104 Safari/537.36 Core/1.53.4843.400 ' \
-             'QQBrowser/9.7.13021.400'
 
-HTTP_PROXY = {
-    'http': '192.168.200.1:1080',
-    'https': '192.168.200.1:1080',
-}
 
 
 ######################################################
 
 
-def http_get(url):
-    return requests.get(
-        url,
-        headers={
-            'User-Agent': HEADERS_UA,
-        },
-        proxies=HTTP_PROXY,
-    )
 
 
-def http_download(url, filename):
-    resp = http_get(url)
-    if not resp:
-        return False
 
-    with open(filename, 'wb') as file:
-        file.write(resp.content)
-    return True
+
 
 
 ######################################################
@@ -52,20 +34,23 @@ class JavLibDetail:
 
     def __init__(self, url):
         self.bs = None
+        self.url = None
+        self.parseset = None
+
         self.id = None
         self.title = None
         self.image = None
         self.date = None
         self.length = None
         self.maker = None
-        self.maker_uri = None
         self.label = None
-        self.label_uri = None
         self.cast = None
-        self.cast_uri = None
 
-        resp = http_get(url)
-        if resp:
+        try:
+            resp = http_get(url)
+            if not resp:
+                return
+
             self.bs = BeautifulSoup(resp.text, 'html5lib')
             self.url = url
             self.parseset = {
@@ -78,29 +63,22 @@ class JavLibDetail:
                 'video_label': self.parse_label,
                 'video_cast': self.parse_cast,
             }
-            self.parse()
+
+            if not self.parse():
+                self.id = None
+
+        except:
+            self.id = None
 
     ######################################################
 
     def parse(self):
-        if not self.bs:
-            return None
-
-        finder = self.bs.findAll('div',
-                                 id=re.compile('video_\w+'))
-        if not finder:
-            return None
-
-        for item in finder:
-            if not item.has_attr('id'):
+        for item in self.bs.findAll('div', id=re.compile('video_\w+')):
+            handler = item['id']
+            if handler not in self.parseset:
                 continue
 
-            item_id = item['id']
-            if item_id not in self.parseset:
-                continue
-
-            if not self.parseset[item_id](item):
-                self.id = None
+            if not self.parseset[handler](item):
                 return None
 
         return True
@@ -108,103 +86,53 @@ class JavLibDetail:
     ######################################################
 
     def parse_id(self, item):
-        finder = item.findAll('td', {
-            'class': 'text',
-        })
-        if not finder:
-            return None
-
-        self.id = finder[-1].get_text().strip()
+        self.id = item.find('td', 'text').get_text().strip()
         return self.id
 
     ######################################################
 
     def parse_image(self, item):
-        finder = item.find('img')
-        if not finder:
-            return None
-
-        self.image = urljoin(self.url, finder['src'].strip())
+        self.image = http_urljoin(self.url, item.img['src'].strip())
         return self.image
 
     ######################################################
 
     def parse_title(self, item):
-        finder = item.find('a')
-        if not finder:
-            return None
-
-        self.title = finder.get_text().strip()
+        self.title = item.a.get_text().strip()
         return self.title
 
     ######################################################
 
     def parse_date(self, item):
-        finder = item.findAll('td', {
-            'class': 'text',
-        })
-        if not finder:
-            return None
-
-        self.date = finder[-1].get_text().strip()
+        self.date = item.find('td', 'text').get_text().strip()
         return self.date
 
     ######################################################
 
     def parse_length(self, item):
-        finder = item.findAll('td')
-        if not finder:
-            return None
-
-        self.length = finder[-1].get_text().strip()
+        self.length = item.find('td', '').get_text().strip()
         return self.length
 
     ######################################################
 
     def parse_maker(self, item):
-        finder = item.findAll('td', {
-            'class': 'text',
-        })
-        if not finder:
-            return None
-
-        self.maker = finder[-1].get_text().strip()
-        self.maker_uri = item.find('a')
-        if self.maker_uri:
-            self.maker_uri = self.maker_uri['href']
-
+        finder = item.find('td', 'text').a
+        self.maker = (finder.get_text().strip(), finder['href'])
         return self.maker
 
     ######################################################
 
     def parse_label(self, item):
-        finder = item.findAll('td', {
-            'class': 'text',
-        })
-        if not finder:
-            return None
-
-        self.label = finder[-1].get_text().strip()
-        self.label_uri = item.find('a')
-        if self.label_uri:
-            self.label_uri = self.label_uri['href']
-
+        finder = item.find('td', 'text').a
+        self.label = (finder.get_text().strip(), finder['href'])
         return self.label
 
     ######################################################
 
     def parse_cast(self, item):
-        finder = item.findAll('td', {
-            'class': 'text',
-        })
-        if not finder:
-            return None
-
-        self.cast = finder[-1].get_text().strip()
-        self.cast_uri = item.find('a')
-        if self.cast_uri:
-            self.cast_uri = self.cast_uri['href']
-
+        self.cast = []
+        for star in item.findAll('span', 'star'):
+            self.cast.append((star.a.get_text().strip(), star.a['href']))
         return self.cast
 
     ######################################################
@@ -212,16 +140,61 @@ class JavLibDetail:
 
 ######################################################
 
-pageurl = ''
+
+def javlib_parse_html(file, path):
+    pagedict = {}
+    try:
+        with open(file, encoding='utf-8') as source:
+            for finder in BeautifulSoup(source.read(), 'html5lib').findAll('div', 'video'):
+                finder = finder.a
+                item = {
+                    'title': finder.find('div', 'title').get_text().strip(),
+                    'image': http_urljoin(path, finder.img['src']),
+                    'page': http_urljoin(path, finder['href']),
+                }
+                pagedict[finder.find('div', 'id').get_text().strip()] = item
+    except:
+        return None
+
+    return pagedict
+
+
+######################################################
+
+
+def javlib_check_lost(pagedict):
+    chk = re.compile('^(\w+)([_-]+)(\w+)$')
+
+    jid_max = chk.match(max(pagedict))
+    if not jid_max:
+        print('javlib_check_lost, ERROR, not jid_max')
+        return None
+
+    jid_min = chk.match(min(pagedict))
+    if not jid_min:
+        print('javlib_check_lost, ERROR, not jid_min')
+        return None
+
+    result = []
+    jid_header = jid_max.group(1)
+    jid_mid = jid_max.group(2)
+    jid_width = len(jid_max.group(3))
+    jid_beg = int(jid_min.group(3))
+    jid_end = int(jid_max.group(3)) + 1
+    for jnum in range(jid_beg, jid_end):
+        jnum = '%s%s%s' % (jid_header, jid_mid, str(jnum).zfill(jid_width))
+        if jnum not in pagedict:
+            result.append(jnum)
+            continue
+
+    return result
+
+
+######################################################
+
+pageurl = 'http://www.javlibrary.com/ja/?v=javlilaf5y'
 jav = JavLibDetail(pageurl)
 print(jav.id)
-print(jav.title)
-print(jav.image)
-print(jav.date)
-print(jav.length)
-print(jav.maker)
-print(jav.maker_uri)
-print(jav.label)
-print(jav.label_uri)
-print(jav.cast)
-print(jav.cast_uri)
+
+pd = javlib_parse_html('./res/snis.html', pageurl)
+print(javlib_check_lost(pd))
