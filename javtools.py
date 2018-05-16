@@ -1,12 +1,11 @@
 
 ######################################################
-# Import Section.
+# Import modules.
 import os
 import re
 import json
 import bs4
-import multiprocessing
-from webtools import http_get, http_urljoin, http_download
+from webtools import http_get, http_urljoin, http_download, reactor_reduce
 
 ######################################################
 # Json serialization.
@@ -186,6 +185,7 @@ class JavLibDetail:
 
 class JavLibSearch:
     def __init__(self, cache=None):
+        self.mainpage = 'http://www.javlibrary.com/ja/'
         self.api = None
         self.result = None
         self.cache = cache
@@ -193,13 +193,34 @@ class JavLibSearch:
 
     ######################################################
 
-    def get(self, keyword, mainpage='http://www.javlibrary.com/ja/'):
-        self.api = http_urljoin(mainpage, 'vl_searchbyid.php?&keyword=%s' % keyword)
+    @staticmethod
+    def mapper_parse_page(page):
+        result = {}
+
+        try:
+            for finder in bsget(page).findAll('div', 'video'):
+                finder = finder.a
+                result[finder.find('div', 'id').get_text().strip()] = {
+                    'title': finder.find('div', 'title').get_text().strip(),
+                    'image': http_urljoin(page, finder.img['src']),
+                    'page': http_urljoin(page, finder['href']),
+                }
+
+        except:
+            print('mapper_parse_page, ERROR, %s', page)
+            return None
+
+        return result
+
+    ######################################################
+
+    def getkeyword(self, keyword):
+        self.api = http_urljoin(self.mainpage, 'vl_searchbyid.php?&keyword=%s' % keyword)
         self.result = {}
 
         try:
-            for page in self.parse_pagelist():
-                self.parse_page(page)
+            for jdict in reactor_reduce(self.parse_pagelist(), self.mapper_parse_page):
+                self.result.update(jdict)
 
             if self.cache:
                 self.save(self.cache)
@@ -231,7 +252,10 @@ class JavLibSearch:
     ######################################################
 
     def __str__(self):
-        icount = len(self.result)
+        icount = 0
+        if self.result:
+            icount = len(self.result)
+
         info = 'JavLibSearch(%s) %s items found' % (self.api, icount)
         if icount > 0:
             info += ' $$LOST$$==> %s' % javlib_check_lost(self.result)
@@ -252,42 +276,35 @@ class JavLibSearch:
 
     ######################################################
 
-    def parse_page(self, page):
-        for finder in bsget(page).findAll('div', 'video'):
-            finder = finder.a
-            self.result[finder.find('div', 'id').get_text().strip()] = {
-                'title': finder.find('div', 'title').get_text().strip(),
-                'image': http_urljoin(page, finder.img['src']),
-                'page': http_urljoin(page, finder['href']),
-            }
-
-    ######################################################
-
     @staticmethod
-    def fork_capdetail(page, imgfile):
-        info = JavLibDetail(page)
-        if not info.id:
-            print('JavLibSearch build, ERROR, info.id = %s', info.id)
-            return None
+    def mapper_parse_detail(info):
+        try:
+            jid, jitem, imgfile = info
 
-        if not http_download(info.image, imgfile):
-            print('JavLibSearch build, ERROR, img = %s', info.id)
-            return None
+            detail = JavLibDetail(jitem['page'])
+            if not detail.id:
+                print('mapper_parse_detail, ERROR, detail = %s', jid)
+                return None
 
-        return True
+            if not http_download(detail.image, imgfile):
+                print('mapper_parse_detail, ERROR, image = %s', jid)
+                return None
+
+            return jid
+
+        except:
+            return None
 
     ######################################################
 
     def build(self, path):
-        reactor = multiprocessing.Pool(8)
+        details = []
         for jid, jitem in self.result.items():
-            img = os.path.join(path, jid + '.jpg')
-            if os.path.exists(img):
+            imgfile = os.path.join(path, jid + '.jpg')
+            if os.path.exists(imgfile):
                 continue
+            details.append((jid, jitem, imgfile))
 
-            reactor.apply_async(self.fork_capdetail, (jitem['page'], img))
-
-        reactor.close()
-        reactor.join()
+        reactor_reduce(details, self.mapper_parse_detail)
 
 ######################################################
