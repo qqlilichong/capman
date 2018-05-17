@@ -7,6 +7,20 @@ import multiprocessing
 
 ######################################################
 
+def file_mkdir(filename):
+    result = None
+
+    try:
+        os.makedirs(filename, exist_ok=True)
+
+        result = True
+        return
+
+    finally:
+        return result
+
+######################################################
+
 def file_exists(filename):
     result = None
 
@@ -77,7 +91,6 @@ def reactor_reduce(dlist, handler, ps=32):
 
     try:
         if len(dlist) == 0:
-            result = []
             return
 
         ios = multiprocessing.Pool(ps)
@@ -132,5 +145,10 @@ def jseri(text):
 
     finally:
         return result
+
+######################################################
+
+def mkdict(**kwargs):
+    return kwargs
 
 ######################################################

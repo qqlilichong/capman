@@ -51,16 +51,16 @@ def javlib_check_lost(pagedict):
 class JavLibDetail:
     def __init__(self, url):
         self.url = url
-        self.parseset = {
-            'video_id': self.parse_id,
-            'video_title': self.parse_title,
-            'video_jacket': self.parse_image,
-            'video_date': self.parse_date,
-            'video_length': self.parse_length,
-            'video_maker': self.parse_maker,
-            'video_label': self.parse_label,
-            'video_cast': self.parse_cast,
-        }
+        self.parseset = mkdict(
+            video_id=self.parse_id,
+            video_title=self.parse_title,
+            video_jacket=self.parse_image,
+            video_date=self.parse_date,
+            video_length=self.parse_length,
+            video_maker=self.parse_maker,
+            video_label=self.parse_label,
+            video_cast=self.parse_cast,
+        )
 
         self.id = None
         self.title = None
@@ -71,6 +71,14 @@ class JavLibDetail:
         self.label = None
         self.cast = None
         self.parse()
+
+    ######################################################
+
+    def ready(self):
+        if self.id:
+            return True
+
+        return None
 
     ######################################################
 
@@ -169,13 +177,33 @@ class JavLibDetail:
 
 ######################################################
 
+def jav_filter_parse_page(**kwargs):
+    title = kwargs['title']
+    if re.match('.*（ブルーレイディスク）', title):
+        print('jav_filter_parse_page, INFO, %s <%s> %s' % (kwargs['page'], kwargs['jid'], title))
+        return None
+
+    return kwargs
+
+######################################################
+
 class JavLibSearch:
     def __init__(self, cache=None):
         self.mainpage = 'http://www.javlibrary.com/ja/'
-        self.api = None
         self.result = None
+        self.api = None
         self.cache = cache
-        self.load(self.cache)
+
+        if self.cache:
+            self.load(self.cache)
+
+    ######################################################
+
+    def ready(self):
+        if self.result and self.api:
+            return True
+
+        return None
 
     ######################################################
 
@@ -184,140 +212,168 @@ class JavLibSearch:
 
         try:
             jdict = jseri(file_read(filename, 'r', encoding=enc))
-            self.api = jdict['api']
             self.result = jdict['result']
+            self.api = jdict['api']
 
             result = True
             return
 
         finally:
             if not result:
-                self.api = None
                 self.result = None
+                self.api = None
 
             return result
 
     ######################################################
 
     def save(self, filename, enc='utf-8'):
-        result = None
+        return file_create(filename, jformat(api=self.api, result=self.result), 'w', encoding=enc)
+
+    ######################################################
+
+    def __str__(self):
+        result = ''
 
         try:
-            if not file_create(
-                    filename,
-                    jformat(api=self.api, result=self.result),
-                    'w',
-                    encoding=enc):
-                return
+            icount = 0
+            if self.result:
+                icount = len(self.result)
 
-            result = True
+            info = 'JavLibSearch(%s) %s items found' % (self.api, icount)
+            if icount > 0:
+                info += ' $$LOST$$==> %s' % javlib_check_lost(self.result)
+
+            result = info
             return
 
         finally:
-            if not result:
-                self.api = None
-                self.result = None
-
             return result
 
     ######################################################
 
     @staticmethod
     def mapper_parse_page(page):
-        result = {}
+        result = None
 
         try:
+            pages = {}
             for finder in bsget(page).findAll('div', 'video'):
                 finder = finder.a
-                result[finder.find('div', 'id').get_text().strip()] = {
-                    'title': finder.find('div', 'title').get_text().strip(),
-                    'image': http_urljoin(page, finder.img['src']),
-                    'page': http_urljoin(page, finder['href']),
-                }
+                jid = finder.find('div', 'id').get_text().strip()
+                fd = jav_filter_parse_page(
+                    jid=jid,
+                    title=finder.find('div', 'title').get_text().strip(),
+                    image=http_urljoin(page, finder.img['src']),
+                    page=http_urljoin(page, finder['href']),
+                )
 
-        except:
-            print('mapper_parse_page, ERROR, %s', page)
-            return None
+                if fd:
+                    pages[jid] = fd
 
-        return result
+            result = pages
+            return
+
+        finally:
+            if not result:
+                print('mapper_parse_page, ERROR, %s' % page)
+
+            return result
 
     ######################################################
 
     def getkeyword(self, keyword):
-        self.api = http_urljoin(self.mainpage, 'vl_searchbyid.php?&keyword=%s' % keyword)
-        self.result = {}
+        result = None
 
         try:
-            for jdict in reactor_reduce(self.parse_pagelist(), self.mapper_parse_page):
+            self.result = {}
+            self.api = http_urljoin(self.mainpage, 'vl_searchbyid.php?&keyword=%s' % keyword)
+
+            pagelist = self.parse_pagelist()
+            reducelist = reactor_reduce(pagelist, self.mapper_parse_page)
+            if len(pagelist) != len(reducelist):
+                return
+
+            for jdict in reducelist:
                 self.result.update(jdict)
 
             if self.cache:
                 self.save(self.cache)
-        except:
-            self.result = None
 
+            result = True
+            return
 
+        finally:
+            if not result:
+                self.result = None
+                self.api = None
 
-    ######################################################
-
-
-
-    ######################################################
-
-    def __str__(self):
-        icount = 0
-        if self.result:
-            icount = len(self.result)
-
-        info = 'JavLibSearch(%s) %s items found' % (self.api, icount)
-        if icount > 0:
-            info += ' $$LOST$$==> %s' % javlib_check_lost(self.result)
-
-        return info
+            return result
 
     ######################################################
 
     def parse_pagelist(self):
-        finder = bsget(self.api).find('a', 'page last')
-        pagecount = int(re.match('.*page=(\d+)', finder['href']).group(1))
+        result = None
 
-        pagelist = []
-        for i in range(1, pagecount + 1):
-            pagelist.append(self.api + '&page=%s' % i)
+        try:
+            finder = bsget(self.api).find('a', 'page last')
+            pagecount = int(re.match('.*page=(\d+)', finder['href']).group(1))
 
-        return pagelist
+            pagelist = []
+            for i in range(1, pagecount + 1):
+                pagelist.append(self.api + '&page=%s' % i)
+
+            result = pagelist
+            return
+
+        finally:
+            return result
 
     ######################################################
 
     @staticmethod
     def mapper_parse_detail(info):
+        result = None
+
         try:
             jid, jitem, imgfile = info
 
             detail = JavLibDetail(jitem['page'])
-            if not detail.id:
-                print('mapper_parse_detail, ERROR, detail = %s', jid)
-                return None
+            if not detail.ready():
+                print('mapper_parse_detail, ERROR, detail = %s' % jid)
+                return
 
-            if not http_download(detail.image, imgfile):
-                print('mapper_parse_detail, ERROR, image = %s', jid)
-                return None
+            if not detail.saveimg(imgfile):
+                print('mapper_parse_detail, ERROR, image = %s' % jid)
+                return
 
-            return jid
+            result = jid
+            return
 
-        except:
-            return None
+        finally:
+            return result
 
     ######################################################
 
     def build(self, path):
-        details = []
-        for jid, jitem in self.result.items():
-            imgfile = os.path.join(path, jid + '.jpg')
-            if os.path.exists(imgfile):
-                continue
-            details.append((jid, jitem, imgfile))
+        result = None
 
-        reactor_reduce(details, self.mapper_parse_detail)
+        try:
+            file_mkdir(path)
+
+            details = []
+            for jid, jitem in self.result.items():
+                imgfile = os.path.join(path, jid + '.jpg')
+                if not os.path.exists(imgfile):
+                    details.append((jid, jitem, imgfile))
+
+            if not reactor_reduce(details, self.mapper_parse_detail):
+                return
+
+            result = True
+            return
+
+        finally:
+            return result
 
 ######################################################
