@@ -1,82 +1,100 @@
 
 ######################################################
-# Import modules.
-import os
+
+import bs4
 import requests
 import urllib.parse
-import multiprocessing
+from mantools import *
 
 ######################################################
-# HTTP settings.
-HEADERS_UA = 'Mozilla/5.0 (Windows NT 6.1; WOW64) ' \
-             'AppleWebKit/537.36 (KHTML, like Gecko) ' \
-             'Chrome/53.0.2785.104 Safari/537.36 Core/1.53.4843.400 ' \
-             'QQBrowser/9.7.13021.400'
+
+HTTP_HUA = 'Mozilla/5.0 (Windows NT 6.1; WOW64) ' \
+           'AppleWebKit/537.36 (KHTML, like Gecko) ' \
+           'Chrome/53.0.2785.104 Safari/537.36 Core/1.53.4843.400 ' \
+           'QQBrowser/9.7.13021.400'
 
 HTTP_PROXY = {
-    'http': '192.168.200.1:1080',
-    'https': '192.168.200.1:1080',
+    # 'http': '192.168.200.1:1080',
+    # 'https': '192.168.200.1:1080',
 
-    # 'http': '127.0.0.1:1080',
-    # 'https': '127.0.0.1:1080',
+    'http': '127.0.0.1:1080',
+    'https': '127.0.0.1:1080',
 }
 
 ######################################################
-# HTTP GET.
+
 def http_get(url):
+    result = None
+
     try:
-        return requests.get(
+        result = requests.get(
             url,
-            headers={
-                'User-Agent': HEADERS_UA,
-            },
+            headers={'User-Agent': HTTP_HUA},
             proxies=HTTP_PROXY,
             timeout=30,
         )
-    except:
-        return None
 
-######################################################
-# HTTP GET and save content.
-def http_download(url, filename):
-    try:
-        resp = http_get(url)
-        if resp:
-            with open(filename, 'wb') as file:
-                file.write(resp.content)
-                return True
-
-    except:
-        if os.path.exists(filename):
-            os.remove(filename)
-
-    return None
-
-######################################################
-# Join URL.
-def http_urljoin(path, url):
-    return urllib.parse.urljoin(path, url)
-
-######################################################
-# Reducer with multiprocessing.
-def reactor_reduce(dlist, handler, ps=32):
-    result = []
-    if len(dlist) == 0:
+    finally:
         return result
 
-    ios = multiprocessing.Pool(ps)
-    pres = []
-    for d in dlist:
-        pres.append(ios.apply_async(handler, (d,)))
+######################################################
 
-    ios.close()
-    ios.join()
+def http_download(url, filename):
+    result = None
 
-    for p in pres:
-        r = p.get()
-        if r:
-            result.append(r)
+    try:
+        resp = http_get(url)
+        if not resp:
+            return
 
-    return result
+        if not file_create(filename, resp.content):
+            return
+
+        result = True
+        return
+
+    finally:
+        if not result:
+            file_remove(filename)
+
+        return result
+
+######################################################
+
+def http_urljoin(path, url):
+    result = None
+
+    try:
+        result = urllib.parse.urljoin(path, url)
+
+    finally:
+        return result
+
+######################################################
+
+def bscreator(text):
+    result = None
+
+    try:
+        result = bs4.BeautifulSoup(text, 'html5lib')
+
+    finally:
+        return result
+
+######################################################
+
+def bsget(url):
+    result = None
+
+    try:
+        resp = http_get(url)
+        if not resp:
+            return
+
+        result = bscreator(resp.text)
+        return
+
+    finally:
+        return result
 
 ######################################################

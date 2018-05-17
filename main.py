@@ -1,11 +1,12 @@
 
 ######################################################
-# Import Section.
+
 from javtools import *
 
 ######################################################
 
 if __name__ == '__main__':
+    exit()
     res_path = os.path.join(os.path.dirname(__file__), 'res')
 
     javdict = {

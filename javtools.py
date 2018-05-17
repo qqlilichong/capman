@@ -1,74 +1,50 @@
 
 ######################################################
-# Import modules.
-import os
+
 import re
-import json
-import bs4
-from webtools import http_get, http_urljoin, http_download, reactor_reduce
+from webtools import *
 
 ######################################################
-# Json serialization.
-def jformat(*args, **kwargs):
-    obj = None
 
-    if args:
-        obj = args
-
-    elif kwargs:
-        obj = kwargs
-
-    return json.dumps(obj, ensure_ascii=False, indent=True)
-
-    ######################################################
-
-def jseri(text):
-    return json.loads(text)
-
-######################################################
-# BeautifulSoup Creator.
-def bscreator(text):
-    return bs4.BeautifulSoup(text, 'html5lib')
-
-    ######################################################
-
-def bsget(url):
-    return bscreator(http_get(url).text)
-
-    ######################################################
-
-def bshtml(file, enc='utf-8'):
-    with open(file, encoding=enc) as src:
-        return bscreator(src.read())
-
-######################################################
-#  Find all lost jav-id.
 def javlib_check_lost(pagedict):
-    chk = re.compile('^(\w+)([_-]+)(\w+)$')
+    result = None
 
-    jid_max = chk.match(max(pagedict))
-    if not jid_max:
-        print('javlib_check_lost, ERROR, not jid_max')
-        return None
+    try:
+        chk = re.compile('^(\w+)([_-]+)(\w+)$')
 
-    jid_min = chk.match(min(pagedict))
-    if not jid_min:
-        print('javlib_check_lost, ERROR, not jid_min')
-        return None
+        key_max = max(pagedict)
+        jid_max = chk.match(key_max)
+        if not jid_max:
+            print('javlib_check_lost, ERROR, jid_max')
+            return
 
-    result = []
-    jid_header = jid_max.group(1)
-    jid_mid = jid_max.group(2)
-    jid_width = len(jid_max.group(3))
-    jid_beg = int(jid_min.group(3))
-    jid_end = int(jid_max.group(3)) + 1
-    for jnum in range(jid_beg, jid_end):
-        jnum = '%s%s%s' % (jid_header, jid_mid, str(jnum).zfill(jid_width))
-        if jnum not in pagedict:
-            result.append(jnum)
-            continue
+        key_min = min(pagedict)
+        jid_min = chk.match(key_min)
+        if not jid_min:
+            print('javlib_check_lost, ERROR, jid_min')
+            return
 
-    return result
+        jid_header = jid_max.group(1)
+        jid_mid = jid_max.group(2)
+        jid_width = len(jid_max.group(3))
+        jid_beg = int(jid_min.group(3))
+        jid_end = int(jid_max.group(3)) + 1
+
+        losts = []
+        for jnum in range(jid_beg, jid_end):
+            jnum = '%s%s%s' % (jid_header, jid_mid, str(jnum).zfill(jid_width))
+            if jnum not in pagedict:
+                losts.append(jnum)
+                continue
+
+        report = ['%s <%s, %s> %s' % (key_min, jid_end - jid_beg, len(losts), key_max)]
+        report.extend(losts)
+
+        result = report
+        return
+
+    finally:
+        return result
 
 ######################################################
 
@@ -94,84 +70,90 @@ class JavLibDetail:
         self.maker = None
         self.label = None
         self.cast = None
-
-        try:
-            if not self.parse():
-                self.id = None
-        except:
-            self.id = None
+        self.parse()
 
     ######################################################
 
     def __str__(self):
-        return jformat(
-            url=self.url,
-            id=self.id,
-            title=self.title,
-            image=self.image,
-            date=self.date,
-            length=self.length,
-            maker=self.maker,
-            label=self.label,
-            cast=self.cast,
-        )
+        result = ''
+
+        try:
+            jstr = jformat(
+                url=self.url,
+                id=self.id,
+                title=self.title,
+                image=self.image,
+                date=self.date,
+                length=self.length,
+                maker=self.maker,
+                label=self.label,
+                cast=self.cast,
+            )
+            if not jstr:
+                return
+
+            result = jstr
+            return
+
+        finally:
+            return result
 
     ######################################################
 
     def parse(self):
-        for item in bsget(self.url).findAll('div', id=re.compile('video_\w+')):
-            handler = item['id']
-            if handler not in self.parseset:
-                continue
+        result = None
 
-            if not self.parseset[handler](item):
-                return None
+        try:
+            for item in bsget(self.url).findAll('div', id=re.compile('video_\w+')):
+                handler = item['id']
+                if handler in self.parseset:
+                    self.parseset[handler](item)
 
-        return True
+            result = True
+            return
+
+        finally:
+            if not result:
+                self.id = None
+
+            return result
 
     ######################################################
 
     def parse_id(self, item):
         self.id = item.find('td', 'text').get_text().strip()
-        return self.id
 
     ######################################################
 
     def parse_image(self, item):
         self.image = http_urljoin(self.url, item.img['src'].strip())
-        return self.image
 
     ######################################################
 
     def parse_title(self, item):
         self.title = item.a.get_text().strip()
-        return self.title
 
     ######################################################
 
     def parse_date(self, item):
         self.date = item.find('td', 'text').get_text().strip()
-        return self.date
 
     ######################################################
 
     def parse_length(self, item):
         self.length = item.find('td', '').get_text().strip()
-        return self.length
 
     ######################################################
 
     def parse_maker(self, item):
         finder = item.find('td', 'text').a
         self.maker = (finder.get_text().strip(), finder['href'])
-        return self.maker
 
     ######################################################
 
     def parse_label(self, item):
         finder = item.find('td', 'text').a
         self.label = (finder.get_text().strip(), finder['href'])
-        return self.label
 
     ######################################################
 
@@ -179,7 +161,11 @@ class JavLibDetail:
         self.cast = []
         for star in item.findAll('span', 'star'):
             self.cast.append((star.a.get_text().strip(), star.a['href']))
-        return self.cast
+
+    ######################################################
+
+    def saveimg(self, filename):
+        return http_download(self.image, filename)
 
 ######################################################
 
@@ -190,6 +176,49 @@ class JavLibSearch:
         self.result = None
         self.cache = cache
         self.load(self.cache)
+
+    ######################################################
+
+    def load(self, filename, enc='utf-8'):
+        result = None
+
+        try:
+            jdict = jseri(file_read(filename, 'r', encoding=enc))
+            self.api = jdict['api']
+            self.result = jdict['result']
+
+            result = True
+            return
+
+        finally:
+            if not result:
+                self.api = None
+                self.result = None
+
+            return result
+
+    ######################################################
+
+    def save(self, filename, enc='utf-8'):
+        result = None
+
+        try:
+            if not file_create(
+                    filename,
+                    jformat(api=self.api, result=self.result),
+                    'w',
+                    encoding=enc):
+                return
+
+            result = True
+            return
+
+        finally:
+            if not result:
+                self.api = None
+                self.result = None
+
+            return result
 
     ######################################################
 
@@ -227,27 +256,11 @@ class JavLibSearch:
         except:
             self.result = None
 
-    ######################################################
 
-    def save(self, file, enc='utf-8'):
-        try:
-            with open(file, 'w', encoding=enc) as fh:
-                fh.write(jformat(api=self.api, result=self.result))
-                return True
-        except:
-            return None
 
     ######################################################
 
-    def load(self, file, enc='utf-8'):
-        try:
-            with open(file, 'r', encoding=enc) as fh:
-                jdict = jseri(fh.read())
-                self.api = jdict['api']
-                self.result = jdict['result']
-                return True
-        except:
-            return None
+
 
     ######################################################
 
