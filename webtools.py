@@ -27,12 +27,18 @@ def http_get(url):
     result = None
 
     try:
-        result = requests.get(
+        resp = requests.get(
             url,
             headers={'User-Agent': HTTP_HUA},
             proxies=HTTP_PROXY,
             timeout=30,
         )
+
+        if resp.status_code != requests.codes.ok:
+            return
+
+        result = resp
+        return
 
     finally:
         return result
@@ -47,13 +53,26 @@ def http_download(url, filename):
         if not resp:
             return
 
+        filesize = len(resp.content)
+        if not filesize:
+            return
+
+        if filesize == 0:
+            return
+
         if not file_create(filename, resp.content):
+            return
+
+        if file_size(filename) != filesize:
             return
 
         result = True
         return
 
     finally:
+        if not result:
+            file_remove(filename)
+
         return result
 
 ######################################################

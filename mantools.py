@@ -7,6 +7,17 @@ import multiprocessing
 
 ######################################################
 
+def file_size(filename):
+    result = None
+
+    try:
+        result = os.path.getsize(filename)
+
+    finally:
+        return result
+
+######################################################
+
 def file_mkdir(filename):
     result = None
 
