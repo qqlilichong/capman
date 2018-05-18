@@ -6,25 +6,19 @@ from javtools import *
 ######################################################
 
 if __name__ == '__main__':
-    res_path = os.path.join(os.path.dirname(__file__), 'res')
+    id_maker = 'SONE'
+    id_typer = 'AVOP'
+    path_cache = os.path.join(os.path.dirname(__file__), 'res')
+    path_maker = os.path.join(path_cache, id_maker)
+    cache_file = os.path.join(path_cache, '%s.jlsc' % id_typer)
 
-    javdict = {
-        'SONE': ('SNIS',),
-    }
+    jsearch = JavLibSearch(cache_file)
 
-    for maker_name, maker_plist in javdict.items():
-        for pheader in maker_plist:
-            image_path = os.path.join(res_path, maker_name)
-            image_path = os.path.join(image_path, pheader)
+    if not jsearch.ready():
+        jsearch.get('http://www.javlibrary.com/ja/vl_searchbyid.php?&keyword=%s' % id_typer)
 
-            jsearch = JavLibSearch(os.path.join(res_path, pheader + '.jlsc'))
-            if not jsearch.ready():
-                jsearch.getkeyword(pheader + '-')
-
-            if jsearch.ready():
-                jsearch.build(image_path)
-
-            print(jsearch)
+    if jsearch.ready():
+        print(jsearch)
 
     print('capman bye!')
     exit(0)

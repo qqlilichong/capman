@@ -6,48 +6,6 @@ from webtools import *
 
 ######################################################
 
-def javlib_check_lost(pagedict):
-    result = None
-
-    try:
-        chk = re.compile('^(\w+)([_-]+)(\w+)$')
-
-        key_max = max(pagedict)
-        jid_max = chk.match(key_max)
-        if not jid_max:
-            print('javlib_check_lost, ERROR, jid_max')
-            return
-
-        key_min = min(pagedict)
-        jid_min = chk.match(key_min)
-        if not jid_min:
-            print('javlib_check_lost, ERROR, jid_min')
-            return
-
-        jid_header = jid_max.group(1)
-        jid_mid = jid_max.group(2)
-        jid_width = len(jid_max.group(3))
-        jid_beg = int(jid_min.group(3))
-        jid_end = int(jid_max.group(3)) + 1
-
-        losts = []
-        for jnum in range(jid_beg, jid_end):
-            jnum = '%s%s%s' % (jid_header, jid_mid, str(jnum).zfill(jid_width))
-            if jnum not in pagedict:
-                losts.append(jnum)
-                continue
-
-        report = ['%s <%s, %s> %s' % (key_min, jid_end - jid_beg, len(losts), key_max)]
-        report.extend(losts)
-
-        result = report
-        return
-
-    finally:
-        return result
-
-######################################################
-
 class JavLibDetail:
     def __init__(self, url):
         self.url = url
@@ -178,9 +136,10 @@ class JavLibDetail:
 ######################################################
 
 def jav_filter_parse_page(**kwargs):
-    title = kwargs['title']
-    if re.match('.*（ブルーレイディスク）', title):
-        print('jav_filter_parse_page, INFO, %s <%s> %s' % (kwargs['page'], kwargs['jid'], title))
+    if re.match('.*（ブルーレイディスク）', kwargs['title']):
+        return None
+
+    if not re.match('^\d+$', kwargs['jnumer']):
         return None
 
     return kwargs
@@ -189,7 +148,6 @@ def jav_filter_parse_page(**kwargs):
 
 class JavLibSearch:
     def __init__(self, cache=None):
-        self.mainpage = 'http://www.javlibrary.com/ja/'
         self.result = None
         self.api = None
         self.cache = cache
@@ -232,19 +190,64 @@ class JavLibSearch:
 
     ######################################################
 
+    def check_lost(self, jtyper, jminder, jbeg, jend):
+        result = None
+
+        try:
+            jid_width = len(jend)
+            jmin = int(jbeg)
+            jmax = int(jend)
+
+            losts = []
+            for jnum in range(jmin, jmax + 1):
+                jnum = '%s%s%s' % (jtyper, jminder, str(jnum).zfill(jid_width))
+                if jnum not in self.result:
+                    losts.append(jnum)
+                    continue
+
+            report = [jtyper, '%s <%s> %s' % (jmin, len(losts), jmax)]
+            report.extend(losts)
+            report = str(report)
+            report += '\n'
+
+            result = report
+            return
+
+        finally:
+            return result
+
+    ######################################################
+
     def __str__(self):
         result = ''
 
         try:
-            icount = 0
-            if self.result:
-                icount = len(self.result)
+            if len(self.result) == 0:
+                return
 
-            info = 'JavLibSearch(%s) %s items found' % (self.api, icount)
-            if icount > 0:
-                info += ' $$LOST$$==> %s' % javlib_check_lost(self.result)
+            jidrange = {}
+            for jid in self.result:
+                jtyper = self.result[jid]['jtyper']
+                jmider = self.result[jid]['jmider']
+                jnumer = self.result[jid]['jnumer']
 
-            result = info
+                if jtyper not in jidrange:
+                    jidrange[jtyper] = [jmider, jnumer, jnumer]
+                    continue
+
+                if int(jnumer) < int(jidrange[jtyper][1]):
+                    jidrange[jtyper][1] = jnumer
+                    continue
+
+                if int(jnumer) > int(jidrange[jtyper][2]):
+                    jidrange[jtyper][2] = jnumer
+                    continue
+
+            report = ''
+            for jtyper, pair in jidrange.items():
+                report += self.check_lost(jtyper, pair[0], pair[1], pair[2])
+
+            result = report
             return
 
         finally:
@@ -260,9 +263,19 @@ class JavLibSearch:
             pages = {}
             for finder in bsget(page).findAll('div', 'video'):
                 finder = finder.a
-                jid = finder.find('div', 'id').get_text().strip()
+                gid = re.match('(\w+)(\W+)(\w+)', finder.find('div', 'id').get_text().strip())
+                if not gid:
+                    continue
+
+                jtyper = gid.group(1).strip()
+                jmider = gid.group(2).strip()
+                jnumer = gid.group(3).strip()
+                jid = '%s%s%s' % (jtyper, jmider, jnumer)
                 fd = jav_filter_parse_page(
                     jid=jid,
+                    jtyper=jtyper,
+                    jmider=jmider,
+                    jnumer=jnumer,
                     title=finder.find('div', 'title').get_text().strip(),
                     image=http_urljoin(page, finder.img['src']),
                     page=http_urljoin(page, finder['href']),
@@ -282,12 +295,12 @@ class JavLibSearch:
 
     ######################################################
 
-    def getkeyword(self, keyword):
+    def get(self, keyword):
         result = None
 
         try:
             self.result = {}
-            self.api = http_urljoin(self.mainpage, 'vl_searchbyid.php?&keyword=%s' % keyword)
+            self.api = keyword
 
             pagelist = self.parse_pagelist()
             reducelist = reactor_reduce(pagelist, self.mapper_parse_page)
@@ -359,8 +372,6 @@ class JavLibSearch:
         result = None
 
         try:
-            file_mkdir(path)
-
             details = []
             for jid, jitem in self.result.items():
                 imgfile = os.path.join(path, jid + '.jpg')
