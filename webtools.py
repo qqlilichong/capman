@@ -34,7 +34,7 @@ def http_get(url):
             timeout=30,
         )
 
-        if resp.status_code != requests.codes.ok:
+        if not resp.ok:
             return
 
         result = resp
@@ -53,17 +53,18 @@ def http_download(url, filename):
         if not resp:
             return
 
-        filesize = len(resp.content)
-        if not filesize:
+        fs = resp.headers.get('content-length')
+        if not fs:
             return
 
-        if filesize == 0:
+        fs = int(fs)
+        if fs == 0:
             return
 
         if not file_create(filename, resp.content):
             return
 
-        if file_size(filename) != filesize:
+        if file_size(filename) != fs:
             return
 
         result = True
