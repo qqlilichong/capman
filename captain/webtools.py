@@ -4,7 +4,7 @@
 import bs4
 import requests
 import urllib.parse
-from mantools import *
+from .mantools import *
 
 ######################################################
 

@@ -1,13 +1,13 @@
 
 ######################################################
 
-from javtools import *
+from captain.sp_javlib_search import *
 
 ######################################################
 
 if __name__ == '__main__':
     id_maker = 'SONE'
-    id_typer = 'ONSD'
+    id_typer = 'SSNI'
     jfilter = ['EXNAME', 'SONE_TITLE']
     path_cache = os.path.join(os.path.dirname(__file__), 'res')
     path_maker = os.path.join(path_cache, id_maker)
