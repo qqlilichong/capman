@@ -3,7 +3,6 @@
 
 import re
 from .webtools import *
-from .db_javlib import *
 
 ######################################################
 
@@ -136,6 +135,47 @@ class JavLibDetail:
 
     def saveimg(self, filename):
         return http_download(self.image, filename)
+
+    ######################################################
+
+    def dbmodel(self):
+        result = None
+
+        try:
+            model = dict(id=self.id)
+
+            model['detail'] = mkdict(
+                title=self.title,
+                image=self.image,
+                date=self.date,
+                length=self.length
+            )
+
+            model['maker'] = [(
+                re.match('.*m=(\w+)', self.maker[1]).group(1),
+                http_urljoin(self.url, self.maker[1]),
+                self.maker[0]
+            )]
+
+            model['label'] = [(
+                re.match('.*l=(\w+)', self.label[1]).group(1),
+                http_urljoin(self.url, self.label[1]),
+                self.label[0]
+            )]
+
+            model['cast'] = []
+            for mm in self.cast:
+                model['cast'].append((
+                    re.match('.*s=(\w+)', mm[1]).group(1),
+                    http_urljoin(self.url, mm[1]),
+                    mm[0]
+                ))
+
+            result = model
+            return
+
+        finally:
+            return result
 
     ######################################################
 

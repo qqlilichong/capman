@@ -44,6 +44,7 @@ class JavLibDB:
                 db='javlib',
                 charset='utf8mb4'
             )
+            self.session.autocommit(False)
 
             result = True
             return
@@ -56,17 +57,7 @@ class JavLibDB:
 
     ######################################################
 
-    def update(self, **jdetail):
-        return self.execute(jdetail, self.sql_update_detail)
-
-    ######################################################
-
-    def delete(self, **jdetail):
-        return self.execute(jdetail, self.sql_delete_detail)
-
-    ######################################################
-
-    def execute(self, jdetail, sqlmaker):
+    def update(self, jdetail):
         result = None
         context = None
 
@@ -75,7 +66,30 @@ class JavLibDB:
                 return
 
             context = self.session.cursor()
-            context.execute(sqlmaker(jdetail))
+            context.execute(self.sql_delete_detail(jdetail))
+            self.session.commit()
+
+            result = True
+            return
+
+        finally:
+            if context:
+                context.close()
+
+            return result
+
+    ######################################################
+
+    def delete(self, jdetail):
+        result = None
+        context = None
+
+        try:
+            if not self.ready():
+                return
+
+            context = self.session.cursor()
+            context.execute(self.sql_delete_detail(jdetail))
             self.session.commit()
 
             result = True
@@ -92,16 +106,16 @@ class JavLibDB:
     @staticmethod
     def sql_update_detail(jdetail):
         return (
-            "INSERT INTO detail (id, title, image, date, length, maker, label, cast) "
-            "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s') "
-            "ON DUPLICATE KEY UPDATE "
-            "title='%s', "
-            "image='%s', "
-            "date='%s', "
-            "length='%s', "
-            "maker='%s', "
-            "label='%s', "
-            "cast='%s' ;"
+            'INSERT INTO detail (id, title, image, date, length, maker, label, cast) '
+            'VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s") '
+            'ON DUPLICATE KEY UPDATE '
+            'title="%s", '
+            'image="%s", '
+            'date="%s", '
+            'length="%s", '
+            'maker="%s", '
+            'label="%s", '
+            'cast="%s" ;'
         ) % (
             jdetail['id'],
             jdetail['title'],
@@ -122,7 +136,7 @@ class JavLibDB:
 
     @staticmethod
     def sql_delete_detail(jdetail):
-        return "DELETE FROM detail WHERE id = '%s' ;" % jdetail['id']
+        return 'DELETE FROM detail WHERE id = "%s" ;' % jdetail['id']
 
     ######################################################
 

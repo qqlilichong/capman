@@ -2,10 +2,14 @@
 ######################################################
 
 from captain.sp_javlib_search import *
+from captain.db_javlib import *
 
 ######################################################
 
 if __name__ == '__main__':
+    jd = JavLibDetail('http://www.javlibrary.com/ja/?v=javli7bwqi')
+    jd.dbmodel()
+    exit()
     id_maker = 'SONE'
     id_typer = 'SSNI'
     jfilter = ['EXNAME', 'SONE_TITLE']
