@@ -2,7 +2,6 @@
 ######################################################
 
 from captain.sp_javlib_search import *
-from captain.db_javlib import *
 
 ######################################################
 
