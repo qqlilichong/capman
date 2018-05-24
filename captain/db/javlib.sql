@@ -1,8 +1,7 @@
-﻿# Host: localhost  (Version: 5.5.53)
-# Date: 2018-05-24 15:26:41
-# Generator: MySQL-Front 5.3  (Build 4.234)
+﻿# Host: 192.168.200.128  (Version 5.7.22-0ubuntu18.04.1)
+# Date: 2018-05-24 22:55:27
+# Generator: MySQL-Front 6.0  (Build 2.20)
 
-/*!40101 SET NAMES utf8 */;
 
 #
 # Structure for table "cast"
@@ -14,14 +13,12 @@ CREATE TABLE `cast` (
   `url` varchar(255) NOT NULL DEFAULT '',
   `name` varchar(64) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
 #
 # Data for table "cast"
 #
 
-/*!40000 ALTER TABLE `cast` DISABLE KEYS */;
-/*!40000 ALTER TABLE `cast` ENABLE KEYS */;
 
 #
 # Structure for table "detail"
@@ -36,14 +33,30 @@ CREATE TABLE `detail` (
   `length` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 #
 # Data for table "detail"
 #
 
-/*!40000 ALTER TABLE `detail` DISABLE KEYS */;
-/*!40000 ALTER TABLE `detail` ENABLE KEYS */;
+
+#
+# Structure for table "detailroute"
+#
+
+DROP TABLE IF EXISTS `detailroute`;
+CREATE TABLE `detailroute` (
+  `num` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `id` varchar(16) NOT NULL DEFAULT '',
+  `tkey` varchar(16) NOT NULL DEFAULT '',
+  `fkey` varchar(64) NOT NULL DEFAULT '',
+  PRIMARY KEY (`num`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+#
+# Data for table "detailroute"
+#
+
 
 #
 # Structure for table "label"
@@ -55,14 +68,12 @@ CREATE TABLE `label` (
   `url` varchar(255) NOT NULL DEFAULT '',
   `name` varchar(64) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
 #
 # Data for table "label"
 #
 
-/*!40000 ALTER TABLE `label` DISABLE KEYS */;
-/*!40000 ALTER TABLE `label` ENABLE KEYS */;
 
 #
 # Structure for table "maker"
@@ -74,11 +85,9 @@ CREATE TABLE `maker` (
   `url` varchar(255) NOT NULL DEFAULT '',
   `name` varchar(64) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 #
 # Data for table "maker"
 #
 
-/*!40000 ALTER TABLE `maker` DISABLE KEYS */;
-/*!40000 ALTER TABLE `maker` ENABLE KEYS */;
