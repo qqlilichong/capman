@@ -57,45 +57,33 @@ class JavLibDB:
 
     ######################################################
 
-    def update(self, jdetail):
+    def update(self, dbmodel):
+        if not self.ready():
+            return None
+
         result = None
         context = None
 
         try:
-            if not self.ready():
-                return
-
             context = self.session.cursor()
-            context.execute(self.sql_delete_detail(jdetail))
-            self.session.commit()
+
+            jid = dbmodel['id']
+            context.execute(self.sql_update_detail(jid, dbmodel['detail']))
+
+            for tkey in ['maker', 'label', 'cast']:
+                for model in dbmodel[tkey]:
+                    context.execute(self.sql_update_url(tkey, model))
+                    self.syncroute(context, jid, tkey, model[0])
 
             result = True
             return
 
         finally:
-            if context:
-                context.close()
+            if result:
+                self.session.commit()
+            else:
+                self.session.rollback()
 
-            return result
-
-    ######################################################
-
-    def delete(self, jdetail):
-        result = None
-        context = None
-
-        try:
-            if not self.ready():
-                return
-
-            context = self.session.cursor()
-            context.execute(self.sql_delete_detail(jdetail))
-            self.session.commit()
-
-            result = True
-            return
-
-        finally:
             if context:
                 context.close()
 
@@ -104,39 +92,82 @@ class JavLibDB:
     ######################################################
 
     @staticmethod
-    def sql_update_detail(jdetail):
+    def syncroute(context, jid, tkey, fkey):
+        sql = 'SELECT id FROM detailroute WHERE id="%s" AND tkey="%s" AND fkey="%s" limit 1 ;' % (jid, tkey, fkey)
+        result = context.execute(sql)
+        if result == 0:
+            context.execute('INSERT INTO detailroute VALUES (0, "%s", "%s", "%s")' % (jid, tkey, fkey))
+
+    ######################################################
+
+    def delete(self, dbmodel):
+        if not self.ready():
+            return None
+
+        result = None
+        context = None
+
+        try:
+            context = self.session.cursor()
+
+            jid = dbmodel['id']
+            context.execute('DELETE FROM detail WHERE id="%s" ;' % jid)
+            context.execute('DELETE FROM detailroute WHERE id="%s" ;' % jid)
+
+            result = True
+            return
+
+        finally:
+            if result:
+                self.session.commit()
+            else:
+                self.session.rollback()
+
+            if context:
+                context.close()
+
+            return result
+
+    ######################################################
+
+    @staticmethod
+    def sql_update_detail(jid, model):
         return (
-            'INSERT INTO detail (id, title, image, date, length, maker, label, cast) '
-            'VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s") '
+            'INSERT INTO detail '
+            'VALUES ("%s", "%s", "%s", "%s", "%s") '
             'ON DUPLICATE KEY UPDATE '
             'title="%s", '
             'image="%s", '
             'date="%s", '
-            'length="%s", '
-            'maker="%s", '
-            'label="%s", '
-            'cast="%s" ;'
+            'length="%s" ;'
         ) % (
-            jdetail['id'],
-            jdetail['title'],
-            jdetail['image'],
-            jdetail['date'],
-            jdetail['length'],
-            jdetail['maker'],
-            jdetail['label'],
-            jdetail['cast'],
-            jdetail['title'],
-            jdetail['image'],
-            jdetail['date'],
-            jdetail['length'],
-            jdetail['maker'],
-            jdetail['label'],
-            jdetail['cast']
+            jid,
+            model['title'],
+            model['image'],
+            model['date'],
+            model['length'],
+            model['title'],
+            model['image'],
+            model['date'],
+            model['length']
         )
 
     @staticmethod
-    def sql_delete_detail(jdetail):
-        return 'DELETE FROM detail WHERE id = "%s" ;' % jdetail['id']
+    def sql_update_url(table, model):
+        return (
+            'INSERT INTO %s '
+            'VALUES ("%s", "%s", "%s") '
+            'ON DUPLICATE KEY UPDATE '
+            'url="%s", '
+            'name="%s" ;'
+        ) % (
+            table,
+            model[0],
+            model[1],
+            model[2],
+            model[1],
+            model[2]
+        )
 
     ######################################################
 
