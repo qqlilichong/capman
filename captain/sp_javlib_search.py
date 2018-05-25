@@ -33,6 +33,26 @@ class JavLibSearch:
         result = ''
 
         try:
+            report = self.report()
+
+            rlist = []
+            for r in report:
+                rlist.append(str(r))
+
+            report = '\n'.join(rlist)
+
+            result = report
+            return
+
+        finally:
+            return result
+
+    ######################################################
+
+    def report(self):
+        result = None
+
+        try:
             jidrange = {}
             for jpage in self.jpages.values():
                 jtyper = jpage['jtyper']
@@ -54,7 +74,7 @@ class JavLibSearch:
             for jtyper, info in jidrange.items():
                 report.append(self.check_lost(jtyper, info[0], info[1], info[2]))
 
-            result = '\n'.join(report)
+            result = report
             return
 
         finally:
@@ -85,6 +105,9 @@ class JavLibSearch:
     ######################################################
 
     def save(self, filename, enc='utf-8'):
+        if not file_mkdir(os.path.dirname(filename)):
+            return None
+
         return file_create(
             filename,
             jformat(jpages=self.jpages,
@@ -107,7 +130,7 @@ class JavLibSearch:
                     losts.append(jid)
                     continue
 
-            result = str([jtyper, '%s <%s> %s' % (jbeg, len(losts), jend)] + losts)
+            result = [jtyper, '%s <%s> %s' % (jbeg, len(losts), jend)] + losts
             return
 
         finally:
@@ -151,16 +174,16 @@ class JavLibSearch:
         result = None
 
         try:
-            pagecount = int(
-                re.match(
-                    '.*page=(\d+)',
-                    bsget(self.search).find('a', 'page last')['href']
-                ).group(1)
-            )
-
             spagelist = []
-            for i in range(1, pagecount + 1):
-                spagelist.append(('%s&page=%s' % (self.search, i), JavLibFilter(self.filter)))
+            apage = bsget(self.search).find('a', 'page last')
+            if not apage:
+                spagelist.append((self.search, JavLibFilter(self.filter)))
+
+            else:
+                pagecount = int(re.match('.*page=(\d+)', apage['href']).group(1))
+
+                for i in range(1, pagecount + 1):
+                    spagelist.append(('%s&page=%s' % (self.search, i), JavLibFilter(self.filter)))
 
             result = spagelist
             return
@@ -174,6 +197,9 @@ class JavLibSearch:
         result = None
 
         try:
+            if len(self.jpages) == 0:
+                return
+
             jpagelist = []
             for jpage in self.jpages.values():
                 imgfile = os.path.join(path, jpage['jtyper'])
@@ -182,9 +208,10 @@ class JavLibSearch:
                 if not file_exists(imgfile):
                     jpagelist.append((jpage, imgfile))
 
-            jdetailist = JavLibSearchMapper.parse_jpagelist(jpagelist)
-            if len(jdetailist) != len(jpagelist):
-                return
+            if len(jpagelist) > 0:
+                jdetailist = JavLibSearchMapper.parse_jpagelist(jpagelist)
+                if len(jdetailist) != len(jpagelist):
+                    return
 
             result = True
             return
@@ -193,5 +220,59 @@ class JavLibSearch:
             return result
 
     ######################################################
+
+######################################################
+
+def scrapy_javlib_maker(path_root, jurl, jmaker, jfilter):
+    print('')
+    print('**************** scrapy_javlib_maker %s ****************' % jmaker)
+    path_maker = os.path.join(path_root, jmaker)
+
+    print('')
+    print('$finding jtypers ...')
+    jenumtyper = JavLibSearch()
+    jenumtyper.get(jurl)
+    if not jenumtyper.ready():
+        print('scrapy_javlib_maker, ERROR, not ready')
+        return None
+
+    jsdict = {}
+    for ritem in jenumtyper.report():
+        jtyper = ritem[0]
+        jcache = os.path.join(path_maker, '%s.jcache' % jtyper)
+        jsdict[jtyper] = JavLibSearch(jcache)
+        print('found jtyper : [%s]' % jtyper)
+
+    print('')
+    print('$building jtypers cache ...')
+    for jtyper, jsearch in jsdict.items():
+        if jsearch.ready():
+            print('jtyper cache upspeed : [%s]' % jtyper)
+            continue
+
+        print('jtyper cache building : [%s]' % jtyper)
+
+        jsurl = http_urljoin(jurl, 'vl_searchbyid.php?&keyword=%s' % jtyper)
+        while not jsearch.ready():
+            jsearch.get(jsurl, jfilter)
+
+        print('jtyper cache ready : [%s]' % jtyper)
+
+    print('')
+    print('$building jtypers lib ...')
+    for jtyper, jsearch in jsdict.items():
+        print('----------------- [%s] -----------------' % jtyper)
+        print(jsearch)
+        print('')
+
+        building = None
+        while not building:
+            print('$try build ...')
+            building = jsearch.build(path_maker)
+
+        print('-----------------  end  ------------------')
+        print('')
+
+    return True
 
 ######################################################

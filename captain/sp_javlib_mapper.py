@@ -2,6 +2,7 @@
 ######################################################
 
 from .sp_javlib_detail import *
+from .db_javlib import *
 
 ######################################################
 
@@ -69,6 +70,13 @@ class JavLibSearchMapper:
                 return
 
             if not jdetail.saveimg(imgfile):
+                return
+
+            jdb = JavLibDB()
+            if not jdb.connect():
+                return
+
+            if not jdb.update(jdetail.dbmodel()):
                 return
 
             result = jdetail
