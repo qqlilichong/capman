@@ -123,8 +123,11 @@ class JavLibDetail:
 
     def parse_label(self, item):
         finder = item.find('td', 'text').a
-        href = http_urljoin(self.url, finder['href'])
-        self.label = [(re.match('.*l=(\w+)', href).group(1), finder.get_text().strip(), href)]
+        if finder:
+            href = http_urljoin(self.url, finder['href'])
+            self.label = [(re.match('.*l=(\w+)', href).group(1), finder.get_text().strip(), href)]
+        else:
+            self.label = [('NOLABEL', 'NOLABEL', 'NOLABEL')]
 
     ######################################################
 
