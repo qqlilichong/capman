@@ -116,66 +116,29 @@ class JavLibDetail:
 
     def parse_maker(self, item):
         finder = item.find('td', 'text').a
-        self.maker = (finder.get_text().strip(), finder['href'])
+        href = http_urljoin(self.url, finder['href'])
+        self.maker = [(re.match('.*m=(\w+)', href).group(1), finder.get_text().strip(), href)]
 
     ######################################################
 
     def parse_label(self, item):
         finder = item.find('td', 'text').a
-        self.label = (finder.get_text().strip(), finder['href'])
+        href = http_urljoin(self.url, finder['href'])
+        self.label = [(re.match('.*l=(\w+)', href).group(1), finder.get_text().strip(), href)]
 
     ######################################################
 
     def parse_cast(self, item):
         self.cast = []
         for star in item.findAll('span', 'star'):
-            self.cast.append((star.a.get_text().strip(), star.a['href']))
+            star = star.a
+            href = http_urljoin(self.url, star['href'])
+            self.cast.append((re.match('.*s=(\w+)', href).group(1), star.get_text().strip(), href))
 
     ######################################################
 
     def saveimg(self, filename):
         return http_download(self.image, filename)
-
-    ######################################################
-
-    def dbmodel(self):
-        result = None
-
-        try:
-            model = dict(id=self.id)
-
-            model['detail'] = mkdict(
-                title=self.title,
-                image=self.image,
-                date=self.date,
-                length=self.length
-            )
-
-            model['maker'] = [(
-                re.match('.*m=(\w+)', self.maker[1]).group(1),
-                http_urljoin(self.url, self.maker[1]),
-                self.maker[0]
-            )]
-
-            model['label'] = [(
-                re.match('.*l=(\w+)', self.label[1]).group(1),
-                http_urljoin(self.url, self.label[1]),
-                self.label[0]
-            )]
-
-            model['cast'] = []
-            for mm in self.cast:
-                model['cast'].append((
-                    re.match('.*s=(\w+)', mm[1]).group(1),
-                    http_urljoin(self.url, mm[1]),
-                    mm[0]
-                ))
-
-            result = model
-            return
-
-        finally:
-            return result
 
     ######################################################
 

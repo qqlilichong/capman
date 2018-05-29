@@ -76,10 +76,8 @@ class JavLibSearchMapper:
             if not jdb.connect():
                 return
 
-            if not jdb.update(jdetail.dbmodel()):
-                return
-
-            result = jdetail
+            result = jdb.update(jdetail)
+            jdb.close()
             return
 
         finally:

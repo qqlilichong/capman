@@ -57,23 +57,40 @@ class JavLibDB:
 
     ######################################################
 
-    def update(self, dbmodel):
-        if not self.ready():
-            return None
+    def update(self, jdetail):
 
+        def core(jd, ctx):
+            ctx.execute(self.sql_update_detail(jd))
+
+            for maker in jd.maker:
+                ctx.execute(self.sql_update_url('maker', maker))
+
+            for label in jd.label:
+                ctx.execute(self.sql_update_url('label', label))
+
+            for cast in jd.cast:
+                ctx.execute(self.sql_update_url('cast', cast))
+
+            return True
+
+        return self.execute(jdetail, core)
+
+    ######################################################
+
+    def execute(self, jdetail, handler):
         result = None
         context = None
 
         try:
+            if not self.ready():
+                return
+
+            if not jdetail.ready():
+                return
+
             context = self.session.cursor()
-
-            jid = dbmodel['id']
-            context.execute(self.sql_update_detail(jid, dbmodel['detail']))
-
-            for tkey in ['maker', 'label', 'cast']:
-                for model in dbmodel[tkey]:
-                    context.execute(self.sql_update_url(tkey, model))
-                    self.syncroute(context, jid, tkey, model[0])
+            if not handler(jdetail, context):
+                return
 
             result = True
             return
@@ -92,68 +109,51 @@ class JavLibDB:
     ######################################################
 
     @staticmethod
-    def syncroute(context, jid, tkey, fkey):
-        sql = 'SELECT id FROM detailroute WHERE id="%s" AND tkey="%s" AND fkey="%s" limit 1 ;' % (jid, tkey, fkey)
-        result = context.execute(sql)
-        if result == 0:
-            context.execute('INSERT INTO detailroute VALUES (0, "%s", "%s", "%s")' % (jid, tkey, fkey))
+    def sql_update_detail(jdetail):
+        jid = jdetail.id
+        jurl = jdetail.url
+        jtitle = jdetail.title
+        jimage = jdetail.image
+        jdate = jdetail.date
+        jlength = jdetail.length
+        jmaker = ';'.join([x[0] for x in jdetail.maker])
+        jlabel = ';'.join([x[0] for x in jdetail.label])
+        jcast = ';'.join([x[0] for x in jdetail.cast])
 
-    ######################################################
-
-    def delete(self, dbmodel):
-        if not self.ready():
-            return None
-
-        result = None
-        context = None
-
-        try:
-            context = self.session.cursor()
-
-            jid = dbmodel['id']
-            context.execute('DELETE FROM detail WHERE id="%s" ;' % jid)
-            context.execute('DELETE FROM detailroute WHERE id="%s" ;' % jid)
-
-            result = True
-            return
-
-        finally:
-            if result:
-                self.session.commit()
-            else:
-                self.session.rollback()
-
-            if context:
-                context.close()
-
-            return result
-
-    ######################################################
-
-    @staticmethod
-    def sql_update_detail(jid, model):
         return (
             'INSERT INTO detail '
-            'VALUES ("%s", "%s", "%s", "%s", "%s") '
+            'VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s") '
             'ON DUPLICATE KEY UPDATE '
+            'url="%s", '
             'title="%s", '
             'image="%s", '
             'date="%s", '
-            'length="%s" ;'
+            'length="%s", '
+            'maker="%s", '
+            'label="%s", '
+            'cast="%s" ;'
         ) % (
             jid,
-            model['title'],
-            model['image'],
-            model['date'],
-            model['length'],
-            model['title'],
-            model['image'],
-            model['date'],
-            model['length']
+            jurl,
+            jtitle,
+            jimage,
+            jdate,
+            jlength,
+            jmaker,
+            jlabel,
+            jcast,
+            jurl,
+            jtitle,
+            jimage,
+            jdate,
+            jlength,
+            jmaker,
+            jlabel,
+            jcast,
         )
 
     @staticmethod
-    def sql_update_url(table, model):
+    def sql_update_url(tname, fkey):
         return (
             'INSERT INTO %s '
             'VALUES ("%s", "%s", "%s") '
@@ -161,12 +161,12 @@ class JavLibDB:
             'url="%s", '
             'name="%s" ;'
         ) % (
-            table,
-            model[0],
-            model[1],
-            model[2],
-            model[1],
-            model[2]
+            tname,
+            fkey[0],
+            fkey[2],
+            fkey[1],
+            fkey[2],
+            fkey[1]
         )
 
     ######################################################
