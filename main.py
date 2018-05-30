@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     jurl = 'http://www.javlibrary.com/ja/vl_maker.php?m=aqra'
     jmaker = 'MOODYZ'
-    jfilter = ['EXNAME', 'SONE_TITLE']
+    jfilter = ['EXNAME', 'SONE_TITLE', 'AVOP_PASS']
     scrapy_javlib_maker(path_root, jurl, jmaker, jfilter)
 
     print('capman bye!')

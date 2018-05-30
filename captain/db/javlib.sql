@@ -1,5 +1,5 @@
 ﻿# Host: 192.168.200.128  (Version 5.7.22-0ubuntu18.04.1)
-# Date: 2018-05-24 22:55:27
+# Date: 2018-05-30 20:50:23
 # Generator: MySQL-Front 6.0  (Build 2.20)
 
 
@@ -27,34 +27,20 @@ CREATE TABLE `cast` (
 DROP TABLE IF EXISTS `detail`;
 CREATE TABLE `detail` (
   `id` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `url` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `title` varchar(256) COLLATE utf8mb4_unicode_ci NOT NULL,
   `image` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
   `date` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
   `length` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `maker` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `label` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `cast` varchar(2048) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   FULLTEXT KEY `title` (`title`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 #
 # Data for table "detail"
-#
-
-
-#
-# Structure for table "detailroute"
-#
-
-DROP TABLE IF EXISTS `detailroute`;
-CREATE TABLE `detailroute` (
-  `num` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `id` varchar(16) NOT NULL DEFAULT '',
-  `tkey` varchar(16) NOT NULL DEFAULT '',
-  `fkey` varchar(64) NOT NULL DEFAULT '',
-  PRIMARY KEY (`num`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-#
-# Data for table "detailroute"
 #
 
 

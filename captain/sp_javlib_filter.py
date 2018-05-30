@@ -15,6 +15,7 @@ class JavLibFilter:
         self.filtermap = mkdict(
             EXNAME=self.filter_exname,
             SONE_TITLE=self.filter_sone_title,
+            AVOP_PASS=self.filter_avop_pass,
         )
 
         self.makeflow(filterlist)
@@ -71,6 +72,18 @@ class JavLibFilter:
     @staticmethod
     def filter_sone_title(jpage):
         if re.match('.*（ブルーレイディスク）', jpage['title']):
+            return None
+
+        return jpage
+
+    ######################################################
+
+    @staticmethod
+    def filter_avop_pass(jpage):
+        if re.match('^AVOP', jpage['jid']):
+            return None
+
+        if re.match('^AVGL', jpage['jid']):
             return None
 
         return jpage

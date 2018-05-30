@@ -231,7 +231,7 @@ def scrapy_javlib_maker(path_root, jurl, jmaker, jfilter):
     print('')
     print('$finding jtypers ...')
     jenumtyper = JavLibSearch()
-    jenumtyper.get(jurl)
+    jenumtyper.get(jurl, jfilter)
     if not jenumtyper.ready():
         print('scrapy_javlib_maker, ERROR, not ready')
         return None
