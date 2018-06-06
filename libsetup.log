@@ -1,0 +1,90 @@
+
+# PPA
+add-apt-repository ppa:ubuntu-toolchain-r/test
+add-apt-repository ppa:beineri/opt-qt-5.10.1-xenial
+add-apt-repository ppa:jonas-groeger/jetbrains
+add-apt-repository ppa:ondrej/php
+add-apt-repository ppa:paulo-miguel-dias/pkppa
+add-apt-repository ppa:cos-lyk/moonsoft
+add-apt-repository ppa:slgobinath/uget-chrome-wrapper
+
+# GPU
+add-apt-repository ppa:oibaf/graphics-drivers
+wget --no-check-certificate https://download.01.org/gfx/RPM-GPG-KEY-ilg-4 -O - | sudo apt-key add -
+apt-get update
+apt-get upgrade
+apt-get install intel-graphics-update-tool
+
+# FONT
+rm -rf /usr/share/fonts/truetype/arphic
+apt-get remove fcitx-module-kimpanel
+
+# 软件
+apt-get install moonplayer
+apt-get install dosbox
+apt-get install aria2 uget
+apt-get install chromium-browser
+apt-get install uget-chrome-wrapper
+apt-get install smplayer
+apt-get install audex
+apt-get install lame
+apt-get install goldendict
+apt-get install steam
+apt-get install samba
+
+# 教育
+apt-get install gcompris
+apt-get install childsplay
+apt-get install kmplot
+apt-get install tuxmath
+apt-get install kalzium
+apt-get install kgeography
+apt-get install atomix
+apt-get install kbruch
+apt-get install dia
+apt-get install lybniz
+apt-get install pencil
+apt-get install ktouch
+apt-get install ktuberling
+apt-get install scratch
+
+# 游戏
+apt-get install supertux
+apt-get install supertuxkart
+
+# 编程
+apt-get install gcc-7
+apt-get install g++-7
+apt-get install clang-5.0
+apt-get install lldb-5.0
+apt-get install qt-latest qtcreator-latest
+apt-get install clion datagrip intellij-idea-ultimate phpstorm pycharm-professional webstorm
+apt-get install php7.2 php7.2-fpm php7.2-mysql php7.2-json php7.2-xml
+apt-get install git
+apt-get install libgl1-mesa-dev libglu1-mesa-dev
+apt-get install python3-pip
+apt-get install openssl libssl-dev
+apt-get install libpcre3 libpcre3-dev
+apt-get install sqlite3 libsqlite3-dev
+apt-get install mysql-server mysql-client libmysql++-dev
+apt-get install libpq-dev
+
+# docker
+apt-get install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable"
+apt-get update
+apt-get install docker-ce
+docker pull n477r7zq.mirror.aliyuncs.com/yinheli/docker-thunder-xware:latest
+
+# shutdown
+apt-get install watchdog
+systemctl enable watchdog.service
+systemctl start watchdog.service
+
+# vpn
+add-apt-repository ppa:nm-l2tp/network-manager-l2tp
+apt update
+apt install network-manager-l2tp network-manager-l2tp-gnome
+apt install libreswan
+
