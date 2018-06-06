@@ -7,3 +7,8 @@ jmaker = 'tameikegoro'
 jurl = jsite + 'vl_maker.php?m=aqra'
 jmaker = 'MOODYZ'
 
+jurl = jsite + 'vl_label.php?l=bvla'
+jmaker = 'SONE'
+
+jurl = jsite + 'vl_maker.php?m=aq4q'
+jmaker = 'IDEAPOCKET'
