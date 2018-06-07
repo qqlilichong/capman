@@ -193,7 +193,7 @@ class JavLibSearch:
 
     ######################################################
 
-    def build(self, path):
+    def build(self, pathmaker, jpath):
         result = None
 
         try:
@@ -202,11 +202,13 @@ class JavLibSearch:
 
             jpagelist = []
             for jpage in self.jpages.values():
-                imgfile = os.path.join(path, jpage['jtyper'])
-                file_mkdir(imgfile)
-                imgfile = os.path.join(imgfile, jpage['jid'] + '.jpg')
+                imgpath = os.path.join(pathmaker, jpage['jtyper'])
+                file_mkdir(imgpath)
+                imgfile = os.path.join(imgpath, jpage['jid'] + '.jpg')
                 if not file_exists(imgfile):
-                    jpagelist.append((jpage, imgfile))
+                    imgpath = os.path.relpath(imgpath, jpath)
+                    imgpath = imgpath.replace('\\', '/')
+                    jpagelist.append((jpage, imgfile, imgpath))
 
             if len(jpagelist) > 0:
                 jdetailist = JavLibSearchMapper.parse_jpagelist(jpagelist)
@@ -223,10 +225,10 @@ class JavLibSearch:
 
 ######################################################
 
-def scrapy_javlib_maker(path_root, jurl, jmaker, jfilter):
+def scrapy_javlib_maker(jpath, jurl, jmaker, jfilter):
     print('')
     print('**************** scrapy_javlib_maker %s ****************' % jmaker)
-    path_maker = os.path.join(path_root, jmaker)
+    path_maker = os.path.join(jpath, jmaker)
 
     print('')
     print('$finding jtypers ...')
@@ -268,7 +270,7 @@ def scrapy_javlib_maker(path_root, jurl, jmaker, jfilter):
         building = None
         while not building:
             print('$try build ...')
-            building = jsearch.build(path_maker)
+            building = jsearch.build(path_maker, jpath)
 
         print('-----------------  end  ------------------')
         print('')

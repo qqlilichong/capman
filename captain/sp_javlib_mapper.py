@@ -62,7 +62,7 @@ class JavLibSearchMapper:
     @staticmethod
     def parse_jpage(param):
         result = None
-        jpage, imgfile = param
+        jpage, imgfile, imgpath = param
 
         try:
             jdetail = JavLibDetail(jpage['detail'])
@@ -76,6 +76,7 @@ class JavLibSearchMapper:
             if not jdb.connect():
                 return
 
+            jdetail.id = '%s/%s' % (imgpath, jdetail.id)
             result = jdb.update(jdetail)
             jdb.close()
             return
