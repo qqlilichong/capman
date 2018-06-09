@@ -138,15 +138,18 @@ class JavLibSearch:
 
     ######################################################
 
-    def get(self, search, filterlist=list()):
+    def get(self, search, jfilterflow=list()):
         result = None
 
         try:
             self.jpages = {}
             self.search = search
-            self.filter = filterlist
+            self.filter = jfilterflow
 
-            spagelist = self.parse_spagelist()
+            spagelist = None
+            while not spagelist:
+                spagelist = self.parse_spagelist()
+
             jpageslist = JavLibSearchMapper.parse_spagelist(spagelist)
             if len(spagelist) != len(jpageslist):
                 return
@@ -225,24 +228,26 @@ class JavLibSearch:
 
 ######################################################
 
-def scrapy_javlib_maker(jpath, jurl, jmaker, jfilter):
+def scrapy_javlib_maker(jlib, jurl, jmaker, jfilterflow):
     print('')
     print('**************** scrapy_javlib_maker %s ****************' % jmaker)
-    path_maker = os.path.join(jpath, jmaker)
+    path_maker = os.path.join(jlib, jmaker)
 
     print('')
     print('$finding jtypers ...')
-    jenumtyper = JavLibSearch()
-    jenumtyper.get(jurl, jfilter)
-    if not jenumtyper.ready():
-        print('scrapy_javlib_maker, ERROR, not ready')
-        return None
+    jenumtyper = JavLibSearch(os.path.join(path_maker, '%s.jmcache' % jmaker))
+    if jenumtyper.ready():
+        print('jmaker cache upspeed : [%s]' % jmaker)
+    else:
+        while not jenumtyper.ready():
+            print('jmaker cache building : [%s]' % jmaker)
+            jenumtyper.get(jurl, jfilterflow)
+        print('jmaker cache ready : [%s]' % jmaker)
 
     jsdict = {}
     for ritem in jenumtyper.report():
         jtyper = ritem[0]
-        jcache = os.path.join(path_maker, '%s.jcache' % jtyper)
-        jsdict[jtyper] = JavLibSearch(jcache)
+        jsdict[jtyper] = JavLibSearch(os.path.join(path_maker, '%s.jtcache' % jtyper))
         print('found jtyper : [%s]' % jtyper)
 
     print('')
@@ -256,7 +261,7 @@ def scrapy_javlib_maker(jpath, jurl, jmaker, jfilter):
 
         jsurl = http_urljoin(jurl, 'vl_searchbyid.php?&keyword=%s' % jtyper)
         while not jsearch.ready():
-            jsearch.get(jsurl, jfilter)
+            jsearch.get(jsurl, jfilterflow)
 
         print('jtyper cache ready : [%s]' % jtyper)
 
@@ -270,7 +275,7 @@ def scrapy_javlib_maker(jpath, jurl, jmaker, jfilter):
         building = None
         while not building:
             print('$try build ...')
-            building = jsearch.build(path_maker, jpath)
+            building = jsearch.build(path_maker, jlib)
 
         print('-----------------  end  ------------------')
         print('')

@@ -2,7 +2,6 @@
 ######################################################
 
 import re
-from .webtools import *
 
 ######################################################
 
@@ -10,28 +9,29 @@ class JavLibFilter:
 
     ######################################################
 
-    def __init__(self, filterlist):
+    def __init__(self, jfilterflow):
         self.filterflow = None
-        self.filtermap = mkdict(
-            EXNAME=self.filter_exname,
-            SONE_TITLE=self.filter_sone_title,
-            AVOP_PASS=self.filter_avop_pass,
-        )
-
-        self.makeflow(filterlist)
+        self.actions = {
+            'match': self.action_match
+        }
+        self.makeflow(jfilterflow)
 
     ######################################################
 
-    def makeflow(self, filterlist):
+    def makeflow(self, jfilterflow):
         result = None
 
         try:
             filterflow = []
-            for fname in filterlist:
-                filterflow.append(self.filtermap[fname])
+            for key, val in jfilterflow:
+                act = key.split('.')
+                if act[0] in self.actions:
+                    act.append(re.compile(val))
+                    filterflow.append(act)
+                    continue
+                return
 
             self.filterflow = filterflow
-
             result = True
             return
 
@@ -47,8 +47,8 @@ class JavLibFilter:
         result = None
 
         try:
-            for flow in self.filterflow:
-                jpage = flow(jpage)
+            for act in self.filterflow:
+                jpage = self.actions[act[0]](act, jpage)
                 if not jpage:
                     return
 
@@ -61,31 +61,9 @@ class JavLibFilter:
     ######################################################
 
     @staticmethod
-    def filter_exname(jpage):
-        if not re.match('^\d+$', jpage['jnumer']):
+    def action_match(act, jpage):
+        if act[-1].match(jpage[act[1]]):
             return None
-
-        return jpage
-
-    ######################################################
-
-    @staticmethod
-    def filter_sone_title(jpage):
-        if re.match('.*（ブルーレイディスク）', jpage['title']):
-            return None
-
-        return jpage
-
-    ######################################################
-
-    @staticmethod
-    def filter_avop_pass(jpage):
-        if re.match('^AVOP', jpage['jid']):
-            return None
-
-        if re.match('^AVGL', jpage['jid']):
-            return None
-
         return jpage
 
     ######################################################

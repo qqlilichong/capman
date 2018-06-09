@@ -14,8 +14,8 @@ HTTP_HUA = 'Mozilla/5.0 (Windows NT 6.1; WOW64) ' \
            'QQBrowser/9.7.13021.400'
 
 HTTP_PROXY = {
-    'http': '192.168.200.1:1080',
-    'https': '192.168.200.1:1080',
+    # 'http': '192.168.200.1:1080',
+    # 'https': '192.168.200.1:1080',
 
     # 'http': '127.0.0.1:1080',
     # 'https': '127.0.0.1:1080',
@@ -30,8 +30,8 @@ def http_get(url):
         resp = requests.get(
             url,
             headers={'User-Agent': HTTP_HUA},
-            proxies=HTTP_PROXY,
             timeout=30,
+            # proxies=HTTP_PROXY,
         )
 
         if not resp.ok:
