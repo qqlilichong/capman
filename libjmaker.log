@@ -1,14 +1,6 @@
-jurl = jsite + 'vl_label.php?l=bvoq'
-jmaker = 'TAMEIKEGORO'
 
-jurl = jsite + 'vl_label.php?l=bvla'
-jmaker = 'SONE'
-
-jurl = jsite + 'vl_maker.php?m=aqra'
-jmaker = 'MOODYZ'
-
-jurl = jsite + 'vl_maker.php?m=aq4q'
-jmaker = 'IDEAPOCKET'
-
-jurl = jsite + 'vl_maker.php?m=aria'
-jmaker = 'PREMIUM'
+('vl_label.php?l=bvoq', 'TAMEIKEGORO')
+('vl_label.php?l=bvla', 'SONE')
+('vl_maker.php?m=aqra', 'MOODYZ')
+('vl_maker.php?m=aq4q', 'IDEAPOCKET')
+('vl_maker.php?m=aria', 'PREMIUM')
