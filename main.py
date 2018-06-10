@@ -41,7 +41,6 @@ if __name__ == '__main__':
 
     start_capman(os.path.join(jpath, jcfg.get('CONFIG', 'jlib')),
                  jcfg.get('CONFIG', 'site'))
-
     print('capman bye!')
     exit(0)
 

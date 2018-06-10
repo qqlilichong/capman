@@ -112,14 +112,13 @@ class JavLibDB:
     def sql_update_detail(jdetail):
         jid = jdetail.id
         jurl = jdetail.url
-        jtitle = jdetail.title
+        jtitle = pymysql.escape_string(jdetail.title)
         jimage = jdetail.image
         jdate = jdetail.date
         jlength = jdetail.length
         jmaker = ';'.join([x[0] for x in jdetail.maker])
         jlabel = ';'.join([x[0] for x in jdetail.label])
         jcast = ';'.join([x[0] for x in jdetail.cast])
-
         return (
             'INSERT INTO detail '
             'VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s") '
