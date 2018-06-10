@@ -5,6 +5,11 @@ import pymysql
 
 ######################################################
 
+def sqles(sql):
+    return pymysql.escape_string(sql)
+
+######################################################
+
 class JavLibDB:
 
     ######################################################
@@ -110,15 +115,15 @@ class JavLibDB:
 
     @staticmethod
     def sql_update_detail(jdetail):
-        jid = jdetail.id
-        jurl = jdetail.url
-        jtitle = pymysql.escape_string(jdetail.title)
-        jimage = jdetail.image
-        jdate = jdetail.date
-        jlength = jdetail.length
-        jmaker = ';'.join([x[0] for x in jdetail.maker])
-        jlabel = ';'.join([x[0] for x in jdetail.label])
-        jcast = ';'.join([x[0] for x in jdetail.cast])
+        jid = sqles(jdetail.id)
+        jurl = sqles(jdetail.url)
+        jtitle = sqles(jdetail.title)
+        jimage = sqles(jdetail.image)
+        jdate = sqles(jdetail.date)
+        jlength = sqles(jdetail.length)
+        jmaker = sqles(';'.join([x[0] for x in jdetail.maker]))
+        jlabel = sqles(';'.join([x[0] for x in jdetail.label]))
+        jcast = sqles(';'.join([x[0] for x in jdetail.cast]))
         return (
             'INSERT INTO detail '
             'VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s") '
@@ -151,8 +156,14 @@ class JavLibDB:
             jcast,
         )
 
+    ######################################################
+
     @staticmethod
     def sql_update_url(tname, fkey):
+        tname = sqles(tname)
+        uid = sqles(fkey[0])
+        url = sqles(fkey[2])
+        name = sqles(fkey[1])
         return (
             'INSERT INTO %s '
             'VALUES ("%s", "%s", "%s") '
@@ -161,11 +172,11 @@ class JavLibDB:
             'name="%s" ;'
         ) % (
             tname,
-            fkey[0],
-            fkey[2],
-            fkey[1],
-            fkey[2],
-            fkey[1]
+            uid,
+            url,
+            name,
+            url,
+            name
         )
 
     ######################################################
