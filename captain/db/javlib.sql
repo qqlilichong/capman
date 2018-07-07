@@ -1,5 +1,5 @@
-﻿# Host: localhost  (Version 5.7.17)
-# Date: 2018-06-07 10:26:07
+﻿# Host: 192.168.200.128  (Version 5.7.22-0ubuntu18.04.1)
+# Date: 2018-07-07 13:06:37
 # Generator: MySQL-Front 6.0  (Build 2.20)
 
 
@@ -15,11 +15,6 @@ CREATE TABLE `cast` (
   PRIMARY KEY (`id`),
   FULLTEXT KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
-
-#
-# Data for table "cast"
-#
-
 
 #
 # Structure for table "detail"
@@ -41,11 +36,6 @@ CREATE TABLE `detail` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 #
-# Data for table "detail"
-#
-
-
-#
 # Structure for table "label"
 #
 
@@ -59,11 +49,6 @@ CREATE TABLE `label` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
 #
-# Data for table "label"
-#
-
-
-#
 # Structure for table "maker"
 #
 
@@ -75,8 +60,3 @@ CREATE TABLE `maker` (
   PRIMARY KEY (`id`),
   FULLTEXT KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-#
-# Data for table "maker"
-#
-
