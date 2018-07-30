@@ -4,6 +4,8 @@
 import configparser
 from captain.sp_javlib_search import *
 
+import re
+
 ######################################################
 
 if __name__ == '__main__':
