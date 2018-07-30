@@ -9,7 +9,7 @@ from captain.sp_javlib_search import *
 if __name__ == '__main__':
     jpath = os.path.dirname(__file__)
     jcfg = configparser.ConfigParser()
-    jcfg.read(os.path.join(jpath, 'jmakers.ini'))
+    jcfg.read(os.path.join(jpath, 'jmakers.ini'), encoding='utf-8')
 
     def make_jfilterflow(section):
         jfilterflow = []
