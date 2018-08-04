@@ -30,22 +30,39 @@ class JavLibSearchMapper:
 
             try:
                 jpages = {}
-                for finder in bsget(spage).findAll('div', 'video'):
-                    finder = finder.a
-                    vid = re.match('^(\w+)(\W+)(\w+)$', finder.find('div', 'id').get_text().strip())
-                    if not vid:
-                        continue
 
-                    fdict = filterflow.flowing(
+                def makefdict(jid, title, preview, detail):
+                    vid = re.match('^(\w+)(\W+)(\w+)$', jid)
+                    if not vid:
+                        return None
+
+                    return filterflow.flowing(
                         jid=vid.group(0).strip(),
                         jtyper=vid.group(1).strip(),
                         jmider=vid.group(2).strip(),
                         jnumer=vid.group(3).strip(),
-                        title=finder.find('div', 'title').get_text().strip(),
-                        preview=http_urljoin(spage, finder.img['src']),
-                        detail=http_urljoin(spage, finder['href']),
+                        title=title,
+                        preview=preview,
+                        detail=detail,
                     )
 
+                spages = bsget(spage).findAll('div', 'video')
+                if not spages:
+                    jdetail = JavLibDetail(spage)
+                    if jdetail.ready():
+                        fdict = makefdict(jdetail.id,
+                                          jdetail.title,
+                                          jdetail.image,
+                                          jdetail.url)
+                        if fdict:
+                            jpages[fdict['jid']] = fdict
+
+                for finder in spages:
+                    finder = finder.a
+                    fdict = makefdict(finder.find('div', 'id').get_text().strip(),
+                                      finder.find('div', 'title').get_text().strip(),
+                                      http_urljoin(spage, finder.img['src']),
+                                      http_urljoin(spage, finder['href']))
                     if fdict:
                         jpages[fdict['jid']] = fdict
 
