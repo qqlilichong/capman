@@ -7,7 +7,7 @@ import multiprocessing
 
 import bs4
 import requests
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 #######################################################################
 
@@ -108,7 +108,7 @@ def fremove(filename):
 
 #######################################################################
 
-def fget(filename, fmode='rb'):
+def fget(filename, fmode=r'rb'):
     result = None
     try:
         with open(filename, mode=fmode) as fh:
@@ -118,7 +118,7 @@ def fget(filename, fmode='rb'):
 
 #######################################################################
 
-def fset(filename, content, fmode='wb'):
+def fset(filename, content, fmode=r'wb'):
     result = None
     try:
         with open(filename, mode=fmode) as fh:
@@ -142,6 +142,9 @@ def http_get(url, headers=None):
         if not headers:
             headers = def_headers
 
+        if url.startswith(r'//'):
+            url = r'http:' + url
+
         resp = requests.get(url, timeout=30, headers=headers)
         if not resp.ok:
             return
@@ -159,7 +162,7 @@ def http_download(url, filename):
         if not resp:
             return
 
-        len1 = int(resp.headers.get('content-length'))
+        len1 = int(resp.headers.get(r'content-length'))
         if not len1:
             return
 
@@ -194,7 +197,17 @@ def http_urljoin(path, url):
 
 #######################################################################
 
-def bs4create(text, engine='html5lib'):
+def http_urlfpath(url):
+    result = None
+    try:
+        meta = urlparse(url)
+        result = url.replace(r'%s://%s' % (meta.scheme, meta.netloc), r'')
+    finally:
+        return result
+
+#######################################################################
+
+def bs4create(text, engine=r'html5lib'):
     result = None
     try:
         result = bs4.BeautifulSoup(text, engine)

@@ -77,7 +77,7 @@ class DBEngine:
                 vals.append(v)
                 emps.append(r'%s')
 
-            vals.insert(0, r'REPLACE INTO %s (%s) VALUES (%s) ;' % (tname, ','.join(keys), ','.join(emps)))
+            vals.insert(0, r'REPLACE INTO %s (%s) VALUES (%s) ;' % (tname, r','.join(keys), r','.join(emps)))
             result = self.commit([vals])
         finally:
             return result
