@@ -39,7 +39,7 @@ class JavLibDetail:
                 if divid in self.__divs:
                     model[divid] = self.__divs[divid](div)
 
-            self.__model = self.__update(model, url, kind)
+            self.__model = self.__update(model, kind)
         finally:
             return self.__model
 
@@ -99,9 +99,9 @@ class JavLibDetail:
             return result
 
     @staticmethod
-    def __update(model, url, kind):
-        model[r'video_url'] = webtool.http_urlfpath(url)
+    def __update(model, kind):
         model[r'video_kind'] = kind
+        model[r'video_title'], model[r'video_url'] = model[r'video_title']
         model[r'video_type'] = re.findall(r'[a-zA-Z]+', model[r'video_id'])[0]
         model[r'video_number'] = re.findall(r'\d+', model[r'video_id'])[0]
         model[r'video_relpath'] = r'%s/%s' % (model[r'video_kind'], model[r'video_type'])
@@ -114,7 +114,7 @@ class JavLibDetail:
 
     @staticmethod
     def __video_title(div):
-        return div.a.get_text().strip()
+        return div.a.get_text().strip(), div.a[r'href']
 
     @staticmethod
     def __video_jacket(div):
@@ -138,5 +138,93 @@ class JavLibDetail:
                 name=it.get_text().strip()
             ))
         return result
+
+#######################################################################
+
+class JavLibSearch:
+    def __init__(self, url):
+        self.__load(url)
+
+    def __load(self, url):
+        result = None
+        try:
+            result = self.__detailcollect(url)
+        finally:
+            return result
+
+    def __detailcollect(self, url):
+        typeurls = self.__pageselector(url)
+        if not typeurls:
+            return None
+
+        # TODO : filter typeset
+        typeset = {'AVOPVR-', 'AVOP-'}
+        for t in typeset:
+            self.__videocollect(self.__pageselector(webtool.http_urljoin(url, r'vl_searchbyid.php?keyword=%s' % t)))
+
+    @staticmethod
+    def __pageselector(url):
+        pagetotal = 1
+        link = webtool.bs4get(url).find(r'div', r'page_selector').find(r'a', r"page last")
+        if link:
+            pagetotal = int(re.match(r'.*page=(\d+)', link[r'href']).group(1))
+
+        return [url + r'&page=%s' % num for num in range(1, pagetotal + 1)]
+
+    @staticmethod
+    def __typecollect(urls):
+        typeset = set()
+        for data in webtool.reducer(urls, mapper_search_type):
+            typeset |= data
+        return typeset
+
+    @staticmethod
+    def __videocollect(urls):
+        return mapper_search_video(urls[0])
+
+#######################################################################
+
+def mapper_search_type(url):
+    def work():
+        result = None
+        try:
+            typeset = set()
+            for div in webtool.bs4get(url).findAll(r'div', r'video'):
+                typeset.add(re.findall(r'\D+', div.find(r'div', r'id').get_text().strip().upper())[0])
+
+            result = typeset
+        finally:
+            if not result:
+                print(r'Error : %s' % url)
+            return result
+
+    data = None
+    while not data:
+        data = work()
+    return data
+
+#######################################################################
+
+def mapper_search_video(url):
+    def work():
+        result = None
+        try:
+            videolist = list()
+            vidfilter = re.match(r'.*=(.*)', url).group(1)
+            for div in webtool.bs4get(url).findAll(r'div', r'video'):
+                vid = div.find(r'div', r'id').get_text().strip().upper()
+                if re.match(r'^%s.*' % vidfilter, vid):
+                    videolist.append(div.a[r'href'])
+
+            result = videolist
+        finally:
+            if not result:
+                print(r'Error : %s' % url)
+            return result
+
+    data = None
+    while not data:
+        data = work()
+    return data
 
 #######################################################################

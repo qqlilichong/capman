@@ -7,7 +7,7 @@ import multiprocessing
 
 import bs4
 import requests
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 
 #######################################################################
 
@@ -184,16 +184,6 @@ def http_urljoin(path, url):
     result = None
     try:
         result = urljoin(path, url)
-    finally:
-        return result
-
-#######################################################################
-
-def http_urlfpath(url):
-    result = None
-    try:
-        meta = urlparse(url)
-        result = url.replace(r'%s://%s' % (meta.scheme, meta.netloc), r'')
     finally:
         return result
 
