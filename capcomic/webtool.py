@@ -15,26 +15,18 @@ def reducer(dlist, handler, maxps=32):
     result = None
     try:
         ps = len(dlist)
-        if ps == 0:
+        if not ps:
             return
 
         if ps > maxps:
             ps = maxps
 
         ios = multiprocessing.Pool(ps)
-
-        plist = list()
-        for d in dlist:
-            plist.append(ios.apply_async(handler, (d,)))
-
+        plist = [ios.apply_async(handler, (d,)) for d in dlist]
         ios.close()
         ios.join()
 
-        rlist = list()
-        for p in plist:
-            rlist.append(p.get())
-
-        result = rlist
+        result = [p.get() for p in plist]
     finally:
         return result
 
@@ -166,11 +158,11 @@ def http_download(url, filename):
         if not len1:
             return
 
-        if len1 == 0:
+        len2 = len(resp.content)
+        if not len2:
             return
 
-        len2 = len(resp.content)
-        if len2 == 0:
+        if len1 != len2:
             return
 
         if not fset(filename, resp.content):

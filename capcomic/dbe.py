@@ -8,6 +8,7 @@ import pymysql
 class DBEngine:
     def __init__(self):
         self.session = None
+        self.sqls = None
 
     def connect(self, **kwargs):
         result = None
@@ -25,6 +26,7 @@ class DBEngine:
             if not self.session:
                 return
 
+            self.sqls = list()
             result = self.session
         finally:
             return result
@@ -42,21 +44,27 @@ class DBEngine:
         finally:
             return result
 
-    def commit(self, sqls):
+    def append(self, sql):
+        result = None
+        try:
+            if not self.ready():
+                return
+
+            self.sqls.append(sql)
+            result = True
+        finally:
+            return result
+
+    def commit(self):
         cursor = self.cursor()
         if not cursor:
             return None
 
         result = None
         try:
-            for it in sqls:
-                data = list()
-                data += it
-                templ = data.pop(0)
-                args = list()
-                for arg in data:
-                    args.append(pymysql.escape_string(arg))
-                cursor.execute(templ, args)
+            for params in self.sqls:
+                templ = params.pop(0)
+                cursor.execute(templ, [pymysql.escape_string(param) for param in params])
         except:
             self.session.rollback()
         else:
@@ -64,6 +72,7 @@ class DBEngine:
             result = True
         finally:
             cursor.close()
+            self.sqls.clear()
             return result
 
     def replace(self, tname, **kwargs):
@@ -78,7 +87,7 @@ class DBEngine:
                 emps.append(r'%s')
 
             vals.insert(0, r'REPLACE INTO %s (%s) VALUES (%s) ;' % (tname, r','.join(keys), r','.join(emps)))
-            result = self.commit([vals])
+            result = self.append(vals)
         finally:
             return result
 
