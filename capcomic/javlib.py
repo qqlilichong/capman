@@ -9,45 +9,52 @@ import webtool
 
 class JavLibDetail:
     def __init__(self, url, kind):
-        self.divs = webtool.mkd(
-            video_id=self.video_id,
-            video_title=self.video_title,
-            video_jacket=self.video_jacket,
-            video_date=self.video_date,
-            video_length=self.video_length,
-            video_maker=self.video_items,
-            video_label=self.video_items,
-            video_cast=self.video_items,
+        self.__divs = webtool.mkd(
+            video_id=self.__video_id,
+            video_title=self.__video_title,
+            video_jacket=self.__video_jacket,
+            video_date=self.__video_date,
+            video_length=self.__video_length,
+            video_maker=self.__video_items,
+            video_label=self.__video_items,
+            video_cast=self.__video_items,
         )
 
-        self.model = None
-        self.load(url, kind)
+        self.__model = None
+        self.__load(url, kind)
 
-    def load(self, url, kind):
-        self.model = None
+    def __getattr__(self, item):
+        result = None
+        try:
+            result = self.__model[r'video_%s' % item]
+        finally:
+            return result
+
+    def __load(self, url, kind):
+        self.__model = None
         try:
             model = dict()
             for div in webtool.bs4get(url).findAll(r'div', id=re.compile(r'video_\w+')):
                 divid = div[r'id']
-                if divid in self.divs:
-                    model[divid] = self.divs[divid](div)
+                if divid in self.__divs:
+                    model[divid] = self.__divs[divid](div)
 
-            self.model = self.update(model, url, kind)
+            self.__model = self.__update(model, url, kind)
         finally:
-            return self.model
+            return self.__model
 
     def saveimg(self, rootpath):
         result = None
         filename = None
         try:
-            if not self.model:
+            if not self.__model:
                 return
 
-            if not webtool.fmkdir(os.path.join(rootpath, self.model[r'video_relpath'])):
+            if not webtool.fmkdir(os.path.join(rootpath, self.__model[r'video_relpath'])):
                 return
 
-            filename = os.path.join(rootpath, self.model[r'video_localfile'])
-            result = webtool.http_download(self.model[r'video_jacket'], filename)
+            filename = os.path.join(rootpath, self.__model[r'video_localfile'])
+            result = webtool.http_download(self.__model[r'video_jacket'], filename)
         finally:
             if not result:
                 webtool.fremove(filename)
@@ -57,13 +64,32 @@ class JavLibDetail:
     def savemodel(self, dbs):
         result = None
         try:
-            if not self.model:
+            if not self.__model:
                 return
 
-            for tname in (r'maker', r'label', r'cast'):
-                for model in self.model[r'video_%s' % tname]:
+            tnames = {
+                r'maker': None,
+                r'label': None,
+                r'cast': None,
+            }
+
+            for tname in tnames.keys():
+                vals = list()
+                for model in self.__model[r'video_%s' % tname]:
                     if not dbs.replace(tname, **model):
                         return
+                    vals.append(model[r'id'])
+                tnames[tname] = r','.join(vals)
+
+            if not dbs.replace(r'detail',
+                               id=self.__model[r'video_localfile'],
+                               url=self.__model[r'video_url'],
+                               title=self.__model[r'video_title'],
+                               image=self.__model[r'video_jacket'],
+                               date=self.__model[r'video_date'],
+                               length=self.__model[r'video_length'],
+                               **tnames):
+                return
 
             if not dbs.commit():
                 return
@@ -73,7 +99,7 @@ class JavLibDetail:
             return result
 
     @staticmethod
-    def update(model, url, kind):
+    def __update(model, url, kind):
         model[r'video_url'] = webtool.http_urlfpath(url)
         model[r'video_kind'] = kind
         model[r'video_type'] = re.findall(r'[a-zA-Z]+', model[r'video_id'])[0]
@@ -83,27 +109,27 @@ class JavLibDetail:
         return model
 
     @staticmethod
-    def video_id(div):
+    def __video_id(div):
         return div.find(r'td', r'text').get_text().strip().upper()
 
     @staticmethod
-    def video_title(div):
+    def __video_title(div):
         return div.a.get_text().strip()
 
     @staticmethod
-    def video_jacket(div):
+    def __video_jacket(div):
         return div.img[r'src'].strip()
 
     @staticmethod
-    def video_date(div):
+    def __video_date(div):
         return div.find(r'td', r'text').get_text().strip()
 
     @staticmethod
-    def video_length(div):
+    def __video_length(div):
         return div.find(r'td', r'').get_text().strip()
 
     @staticmethod
-    def video_items(div):
+    def __video_items(div):
         result = list()
         for it in div.findAll(r'a'):
             result.append(webtool.mkd(

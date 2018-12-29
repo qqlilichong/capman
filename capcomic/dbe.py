@@ -7,13 +7,13 @@ import pymysql
 
 class DBEngine:
     def __init__(self):
-        self.session = None
-        self.sqls = None
+        self.__session = None
+        self.__sqls = None
 
     def connect(self, **kwargs):
         result = None
         try:
-            if self.session:
+            if self.__session:
                 return
 
             if r'host' not in kwargs.keys():
@@ -22,25 +22,25 @@ class DBEngine:
             if r'charset' not in kwargs.keys():
                 kwargs[r'charset'] = r'utf8mb4'
 
-            self.session = pymysql.connect(**kwargs, autocommit=False)
-            if not self.session:
+            self.__session = pymysql.connect(**kwargs, autocommit=False)
+            if not self.__session:
                 return
 
-            self.sqls = list()
-            result = self.session
+            self.__sqls = list()
+            result = self.__session
         finally:
             return result
 
     def ready(self):
-        return self.session
+        return self.__session
 
-    def cursor(self):
+    def __cursor(self):
         result = None
         try:
             if not self.ready():
                 return
 
-            result = self.session.cursor()
+            result = self.__session.cursor()
         finally:
             return result
 
@@ -50,29 +50,29 @@ class DBEngine:
             if not self.ready():
                 return
 
-            self.sqls.append(sql)
+            self.__sqls.append(sql)
             result = True
         finally:
             return result
 
     def commit(self):
-        cursor = self.cursor()
+        cursor = self.__cursor()
         if not cursor:
             return None
 
         result = None
         try:
-            for params in self.sqls:
+            for params in self.__sqls:
                 templ = params.pop(0)
                 cursor.execute(templ, [pymysql.escape_string(param) for param in params])
         except:
-            self.session.rollback()
+            self.__session.rollback()
         else:
-            self.session.commit()
+            self.__session.commit()
             result = True
         finally:
             cursor.close()
-            self.sqls.clear()
+            self.__sqls.clear()
             return result
 
     def replace(self, tname, **kwargs):
