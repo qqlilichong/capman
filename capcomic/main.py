@@ -1,17 +1,14 @@
 
 #######################################################################
 
-from dbe import DBEngine
-from javlib import JavLibDetail, JavLibSearch
+from javlib import JavLibSearch
 
 #######################################################################
 
 def main():
-    dbs = DBEngine()
-    dbs.connect(db='javlib', user='root', passwd='admin')
-    #javdetail = JavLibDetail(r'http://www.k25m.com/ja/?v=javlijyuze', r'S1')
-    #javdetail.savemodel(dbs)
-    javsearch = JavLibSearch(r'http://www.k25m.com/ja/vl_searchbyid.php?keyword=AVOP-')
+    javsearch = JavLibSearch(r'http://www.k25m.com/ja/vl_searchbyid.php?keyword=AVOP',
+                             r'AV1',
+                             {r'db': r'javlib', r'user': r'root', r'passwd': r'admin'})
     print('bye...')
 
 #######################################################################

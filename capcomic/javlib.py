@@ -7,6 +7,14 @@ import webtool
 
 #######################################################################
 
+def video_id(vid):
+    return vid.strip().upper()
+
+def video_type(vid):
+    return re.findall(r'[a-zA-Z]+', vid)[0]
+
+#######################################################################
+
 class JavLibDetail:
     def __init__(self, url, kind):
         self.__divs = webtool.mkd(
@@ -102,15 +110,14 @@ class JavLibDetail:
     def __update(model, kind):
         model[r'video_kind'] = kind
         model[r'video_title'], model[r'video_url'] = model[r'video_title']
-        model[r'video_type'] = re.findall(r'[a-zA-Z]+', model[r'video_id'])[0]
         model[r'video_number'] = re.findall(r'\d+', model[r'video_id'])[0]
-        model[r'video_relpath'] = r'%s/%s' % (model[r'video_kind'], model[r'video_type'])
+        model[r'video_relpath'] = r'%s/%s' % (model[r'video_kind'], video_type(model[r'video_id']))
         model[r'video_localfile'] = r'%s/%s.jpg' % (model[r'video_relpath'], model[r'video_id'])
         return model
 
     @staticmethod
     def __video_id(div):
-        return div.find(r'td', r'text').get_text().strip().upper()
+        return video_id(div.find(r'td', r'text').get_text())
 
     @staticmethod
     def __video_title(div):
@@ -142,7 +149,9 @@ class JavLibDetail:
 #######################################################################
 
 class JavLibSearch:
-    def __init__(self, url):
+    def __init__(self, url, kind, dbinfo):
+        self.__kind = kind
+        self.__dbinfo = dbinfo
         self.__load(url)
 
     def __load(self, url):
@@ -153,14 +162,16 @@ class JavLibSearch:
             return result
 
     def __detailcollect(self, url):
-        typeurls = self.__pageselector(url)
-        if not typeurls:
-            return None
+        typeset = self.__typecollect(self.__pageselector(url))
+        print('[LOG] - TypeCollect %s : %s' % (self.__kind, typeset))
 
-        # TODO : filter typeset
-        typeset = {'AVOPVR-', 'AVOP-'}
+        searchurls = list()
         for t in typeset:
-            self.__videocollect(self.__pageselector(webtool.http_urljoin(url, r'vl_searchbyid.php?keyword=%s' % t)))
+            searchurl = webtool.http_urljoin(url, r'vl_searchbyid.php?keyword=%s' % t)
+            searchurls += [(t, url) for url in self.__pageselector(searchurl)]
+
+        self.__videocollect(searchurls)
+        return True
 
     @staticmethod
     def __pageselector(url):
@@ -180,7 +191,10 @@ class JavLibSearch:
 
     @staticmethod
     def __videocollect(urls):
-        return mapper_search_video(urls[0])
+        videolist = list()
+        for data in webtool.reducer(urls, mapper_search_video):
+            videolist += data
+        return videolist
 
 #######################################################################
 
@@ -190,40 +204,40 @@ def mapper_search_type(url):
         try:
             typeset = set()
             for div in webtool.bs4get(url).findAll(r'div', r'video'):
-                typeset.add(re.findall(r'\D+', div.find(r'div', r'id').get_text().strip().upper())[0])
+                typeset.add(video_type(video_id(div.find(r'div', r'id').get_text())))
 
             result = typeset
         finally:
-            if not result:
+            if result is None:
                 print(r'Error : %s' % url)
             return result
 
     data = None
-    while not data:
+    while data is None:
         data = work()
     return data
 
 #######################################################################
 
-def mapper_search_video(url):
+def mapper_search_video(param):
+    vfilter, url = param
+
     def work():
         result = None
         try:
             videolist = list()
-            vidfilter = re.match(r'.*=(.*)', url).group(1)
             for div in webtool.bs4get(url).findAll(r'div', r'video'):
-                vid = div.find(r'div', r'id').get_text().strip().upper()
-                if re.match(r'^%s.*' % vidfilter, vid):
-                    videolist.append(div.a[r'href'])
+                if re.match(r'^%s.*' % vfilter, video_id(div.find(r'div', r'id').get_text())):
+                    videolist.append(webtool.http_urljoin(url, div.a[r'href']))
 
             result = videolist
         finally:
-            if not result:
+            if result is None:
                 print(r'Error : %s' % url)
             return result
 
     data = None
-    while not data:
+    while data is None:
         data = work()
     return data
 
