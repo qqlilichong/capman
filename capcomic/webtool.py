@@ -201,11 +201,7 @@ def bs4create(text, engine=r'html5lib'):
 def bs4get(url):
     result = None
     try:
-        resp = http_get(url)
-        if not resp:
-            return
-
-        result = bs4create(resp.text)
+        result = bs4create(http_get(url).text)
     finally:
         return result
 
