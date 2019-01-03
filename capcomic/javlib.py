@@ -149,29 +149,19 @@ class JavLibDetail:
 #######################################################################
 
 class JavLibSearch:
-    def __init__(self, url, kind, dbinfo):
-        self.__kind = kind
-        self.__dbinfo = dbinfo
-        self.__load(url)
-
-    def __load(self, url):
+    @staticmethod
+    def load(url):
         result = None
         try:
-            result = self.__detailcollect(url)
+            typedict = JavLibSearch.__typecollect(url)
+            print('[LOG][JavLibSearch] - TypeCollect : %s' % typedict)
+
+            videodict = JavLibSearch.__videocollect(url, typedict)
+            print('[LOG][JavLibSearch] - VideoCollect : %s' % len(videodict))
+
+            result = videodict
         finally:
             return result
-
-    def __detailcollect(self, url):
-        typeset = self.__typecollect(self.__pageselector(url))
-        print('[LOG] - TypeCollect %s : %s' % (self.__kind, typeset))
-
-        searchurls = list()
-        for t in typeset:
-            searchurl = webtool.http_urljoin(url, r'vl_searchbyid.php?keyword=%s' % t)
-            searchurls += [(t, url) for url in self.__pageselector(searchurl)]
-
-        self.__videocollect(searchurls)
-        return True
 
     @staticmethod
     def __pageselector(url):
@@ -183,33 +173,45 @@ class JavLibSearch:
         return [url + r'&page=%s' % num for num in range(1, pagetotal + 1)]
 
     @staticmethod
-    def __typecollect(urls):
-        typeset = set()
-        for data in webtool.reducer(urls, mapper_search_type):
-            typeset |= data
-        return typeset
+    def __typecollect(url):
+        params = [{r'url': d} for d in JavLibSearch.__pageselector(url)]
+
+        result = dict()
+        for data in webtool.reducer(params, mapper_search_type):
+            result.update(data)
+
+        return result
 
     @staticmethod
-    def __videocollect(urls):
-        videolist = list()
-        for data in webtool.reducer(urls, mapper_search_video):
-            videolist += data
-        return videolist
+    def __videocollect(url, typedict):
+        params = list()
+        for key in typedict.keys():
+            searchurl = webtool.http_urljoin(url, r'vl_searchbyid.php?keyword=%s' % key)
+            params += [{r'type': key, r'url': url} for url in JavLibSearch.__pageselector(searchurl)]
+
+        result = dict()
+        for data in webtool.reducer(params, mapper_search_video):
+            result.update(data)
+
+        return result
 
 #######################################################################
 
-def mapper_search_type(url):
+#######################################################################
+
+def mapper_search_type(param):
     def work():
         result = None
         try:
-            typeset = set()
-            for div in webtool.bs4get(url).findAll(r'div', r'video'):
-                typeset.add(video_type(video_id(div.find(r'div', r'id').get_text())))
+            ret = dict()
+            for div in webtool.bs4get(param[r'url']).findAll(r'div', r'video'):
+                vtype = video_type(video_id(div.find(r'div', r'id').get_text()))
+                ret[vtype] = vtype
 
-            result = typeset
+            result = ret
         finally:
             if result is None:
-                print(r'Error : %s' % url)
+                print(r'Error : %s' % param)
             return result
 
     data = None
@@ -220,20 +222,37 @@ def mapper_search_type(url):
 #######################################################################
 
 def mapper_search_video(param):
-    vfilter, url = param
-
     def work():
         result = None
         try:
-            videolist = list()
-            for div in webtool.bs4get(url).findAll(r'div', r'video'):
-                if re.match(r'^%s.*' % vfilter, video_id(div.find(r'div', r'id').get_text())):
-                    videolist.append(webtool.http_urljoin(url, div.a[r'href']))
+            ret = dict()
+            for div in webtool.bs4get(param[r'url']).findAll(r'div', r'video'):
+                vid = video_id(div.find(r'div', r'id').get_text())
+                if re.match(r'^%s\W+\d+$' % param[r'type'], vid):
+                    ret[vid] = webtool.http_urljoin(param[r'url'], div.a[r'href'])
 
-            result = videolist
+            result = ret
         finally:
             if result is None:
-                print(r'Error : %s' % url)
+                print(r'Error : %s' % param)
+            return result
+
+    data = None
+    while data is None:
+        data = work()
+    return data
+
+#######################################################################
+
+def mapper_search_detail(param):
+    def work():
+        result = None
+        try:
+            ret = dict()
+            result = ret
+        finally:
+            if result is None:
+                print(r'Error : %s' % param)
             return result
 
     data = None
