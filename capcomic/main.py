@@ -1,12 +1,15 @@
 
 #######################################################################
 
-from javlib import JavLibSearch
+from javlib import JavLibSearch, JavLibStore
 
 #######################################################################
 
 def main():
-    videodict = JavLibSearch.load(r'http://www.k25m.com/ja/vl_searchbyid.php?keyword=AVOP')
+    typedict, videodict = JavLibSearch.search(r'http://www.k25m.com/ja/vl_searchbyid.php?keyword=AVOP')
+    JavLibStore.store(r'Y:/JavLibrary', r'AVOPEN',
+                      {r'db': r'javlib', r'user': r'root', r'passwd': r'admin'},
+                      typedict, videodict)
     print('bye...')
 
 #######################################################################

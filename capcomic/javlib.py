@@ -3,6 +3,7 @@
 
 import os
 import re
+import dbe
 import webtool
 
 #######################################################################
@@ -16,7 +17,7 @@ def video_type(vid):
 #######################################################################
 
 class JavLibDetail:
-    def __init__(self, url, kind):
+    def __init__(self, url):
         self.__divs = webtool.mkd(
             video_id=self.__video_id,
             video_title=self.__video_title,
@@ -29,7 +30,7 @@ class JavLibDetail:
         )
 
         self.__model = None
-        self.__load(url, kind)
+        self.__load(url)
 
     def __getattr__(self, item):
         result = None
@@ -38,7 +39,7 @@ class JavLibDetail:
         finally:
             return result
 
-    def __load(self, url, kind):
+    def __load(self, url):
         self.__model = None
         try:
             model = dict()
@@ -47,21 +48,16 @@ class JavLibDetail:
                 if divid in self.__divs:
                     model[divid] = self.__divs[divid](div)
 
-            self.__model = self.__update(model, kind)
+            self.__model = self.__update(model)
         finally:
             return self.__model
 
-    def saveimg(self, rootpath):
+    def saveimg(self, filename):
         result = None
-        filename = None
         try:
             if not self.__model:
                 return
 
-            if not webtool.fmkdir(os.path.join(rootpath, self.__model[r'video_relpath'])):
-                return
-
-            filename = os.path.join(rootpath, self.__model[r'video_localfile'])
             result = webtool.http_download(self.__model[r'video_jacket'], filename)
         finally:
             if not result:
@@ -69,7 +65,7 @@ class JavLibDetail:
 
             return result
 
-    def savemodel(self, dbs):
+    def savemodel(self, dbs, fid):
         result = None
         try:
             if not self.__model:
@@ -90,7 +86,7 @@ class JavLibDetail:
                 tnames[tname] = r','.join(vals)
 
             if not dbs.replace(r'detail',
-                               id=self.__model[r'video_localfile'],
+                               id=fid,
                                url=self.__model[r'video_url'],
                                title=self.__model[r'video_title'],
                                image=self.__model[r'video_jacket'],
@@ -107,12 +103,8 @@ class JavLibDetail:
             return result
 
     @staticmethod
-    def __update(model, kind):
-        model[r'video_kind'] = kind
+    def __update(model):
         model[r'video_title'], model[r'video_url'] = model[r'video_title']
-        model[r'video_number'] = re.findall(r'\d+', model[r'video_id'])[0]
-        model[r'video_relpath'] = r'%s/%s' % (model[r'video_kind'], video_type(model[r'video_id']))
-        model[r'video_localfile'] = r'%s/%s.jpg' % (model[r'video_relpath'], model[r'video_id'])
         return model
 
     @staticmethod
@@ -150,16 +142,16 @@ class JavLibDetail:
 
 class JavLibSearch:
     @staticmethod
-    def load(url):
+    def search(url):
         result = None
         try:
             typedict = JavLibSearch.__typecollect(url)
-            print('[LOG][JavLibSearch] - TypeCollect : %s' % typedict)
+            print('[LOG][JavLibSearch] - TypeCollect : %s.' % typedict)
 
             videodict = JavLibSearch.__videocollect(url, typedict)
-            print('[LOG][JavLibSearch] - VideoCollect : %s' % len(videodict))
+            print('[LOG][JavLibSearch] - VideoCollect : %s.' % len(videodict))
 
-            result = videodict
+            result = typedict, videodict
         finally:
             return result
 
@@ -177,7 +169,7 @@ class JavLibSearch:
         params = [{r'url': d} for d in JavLibSearch.__pageselector(url)]
 
         result = dict()
-        for data in webtool.reducer(params, mapper_search_type):
+        for data in webtool.reducer(params, JavLibSearch.mapper_search_type):
             result.update(data)
 
         return result
@@ -190,74 +182,116 @@ class JavLibSearch:
             params += [{r'type': key, r'url': url} for url in JavLibSearch.__pageselector(searchurl)]
 
         result = dict()
-        for data in webtool.reducer(params, mapper_search_video):
+        for data in webtool.reducer(params, JavLibSearch.mapper_search_video):
             result.update(data)
 
         return result
 
-#######################################################################
+    @staticmethod
+    def mapper_search_type(param):
+        def work():
+            result = None
+            try:
+                ret = dict()
+                for div in webtool.bs4get(param[r'url']).findAll(r'div', r'video'):
+                    vtype = video_type(video_id(div.find(r'div', r'id').get_text()))
+                    ret[vtype] = vtype
+
+                result = ret
+            finally:
+                if result is None:
+                    print(r'[ERROR] : %s.' % param)
+                return result
+
+        data = None
+        while data is None:
+            data = work()
+        return data
+
+    @staticmethod
+    def mapper_search_video(param):
+        def work():
+            result = None
+            try:
+                ret = dict()
+                for div in webtool.bs4get(param[r'url']).findAll(r'div', r'video'):
+                    vid = video_id(div.find(r'div', r'id').get_text())
+                    if re.match(r'^%s\W+\d+$' % param[r'type'], vid):
+                        ret[vid] = webtool.http_urljoin(param[r'url'], div.a[r'href'])
+
+                result = ret
+            finally:
+                if result is None:
+                    print(r'[ERROR] : %s.' % param)
+                return result
+
+        data = None
+        while data is None:
+            data = work()
+        return data
 
 #######################################################################
 
-def mapper_search_type(param):
-    def work():
-        result = None
-        try:
-            ret = dict()
-            for div in webtool.bs4get(param[r'url']).findAll(r'div', r'video'):
-                vtype = video_type(video_id(div.find(r'div', r'id').get_text()))
-                ret[vtype] = vtype
+class JavLibStore:
+    @staticmethod
+    def store(imgroot, kind, dbinfo, typedict, videodict):
+        for t in typedict:
+            webtool.fmkdir(os.path.join(imgroot, kind, t))
 
-            result = ret
-        finally:
-            if result is None:
-                print(r'Error : %s' % param)
-            return result
+        params = list()
+        for vid, url in videodict.items():
+            fid = r'%s/%s/%s.jpg' % (kind, video_type(vid), vid)
+            filename = os.path.join(imgroot, fid)
+            if not webtool.fexists(filename):
+                params.append({
+                    r'id': vid,
+                    r'fid': fid,
+                    r'url': url,
+                    r'dbinfo': dbinfo,
+                    r'file': filename,
+                })
 
-    data = None
-    while data is None:
-        data = work()
-    return data
+        result = dict()
+        for data in webtool.reducer(params, JavLibStore.mapper_store_detail):
+            result.update(data)
 
-#######################################################################
+        return result
 
-def mapper_search_video(param):
-    def work():
-        result = None
-        try:
-            ret = dict()
-            for div in webtool.bs4get(param[r'url']).findAll(r'div', r'video'):
-                vid = video_id(div.find(r'div', r'id').get_text())
-                if re.match(r'^%s\W+\d+$' % param[r'type'], vid):
-                    ret[vid] = webtool.http_urljoin(param[r'url'], div.a[r'href'])
+    @staticmethod
+    def mapper_store_detail(param):
+        def work():
+            result = None
+            try:
+                ret = dict()
 
-            result = ret
-        finally:
-            if result is None:
-                print(r'Error : %s' % param)
-            return result
+                dbs = dbe.DBEngine()
+                if not dbs.connect(**param[r'dbinfo']):
+                    print(r'[ERROR] : DBEngine.')
+                    return
 
-    data = None
-    while data is None:
-        data = work()
-    return data
+                jd = JavLibDetail(param[r'url'])
+                if jd.id != param[r'id']:
+                    print(r'[ERROR] video_id failed.')
+                    return
 
-#######################################################################
+                if not jd.saveimg(param[r'file']):
+                    print(r'[ERROR] saveimg: %s.' % param[r'file'])
+                    return
 
-def mapper_search_detail(param):
-    def work():
-        result = None
-        try:
-            ret = dict()
-            result = ret
-        finally:
-            if result is None:
-                print(r'Error : %s' % param)
-            return result
+                if not jd.savemodel(dbs, param[r'fid']):
+                    print(r'[ERROR] savemodel: %s.' % param[r'dbinfo'])
+                    return
 
-    data = None
-    while data is None:
-        data = work()
-    return data
+                result = ret
+            finally:
+                if result is None:
+                    webtool.fremove(param[r'file'])
+                    print(r'[ERROR] : %s.' % param)
+                return result
+
+        data = None
+        while data is None:
+            data = work()
+        return data
 
 #######################################################################
