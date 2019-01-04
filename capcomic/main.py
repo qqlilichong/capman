@@ -30,9 +30,10 @@ def main():
         if jcfg.get(section, r'use') != r'true':
             continue
 
-        javlib.start_collect(rootpath, dbinfo, jmaker.group(1), webtool.http_urljoin(rootsite, jcfg.get(section, r'url')))
+        url = webtool.http_urljoin(rootsite, jcfg.get(section, r'url'))
+        javlib.start_collect(rootpath, dbinfo, jmaker.group(1), url)
 
-    print('main bye ...')
+    print('capman bye ...')
 
 #######################################################################
 
