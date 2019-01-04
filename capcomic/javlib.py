@@ -142,16 +142,23 @@ class JavLibDetail:
 
 class JavLibSearch:
     @staticmethod
-    def search(url):
+    def search(url, typedict):
         result = None
         try:
-            typedict = JavLibSearch.__typecollect(url)
-            print('[LOG][JavLibSearch] - TypeCollect : %s.' % typedict)
+            tdict = dict()
+            for key in JavLibSearch.__typecollect(url).keys():
+                if key not in typedict.keys():
+                    tdict[key] = key
 
-            videodict = JavLibSearch.__videocollect(url, typedict)
+            if not tdict:
+                result = dict(), dict()
+                return
+
+            print('[LOG][JavLibSearch] - TypeCollect : %s.' % tdict.keys())
+            videodict = JavLibSearch.__videocollect(url, tdict)
             print('[LOG][JavLibSearch] - VideoCollect : %s.' % len(videodict))
 
-            result = typedict, videodict
+            result = tdict, videodict
         finally:
             return result
 
@@ -235,7 +242,7 @@ class JavLibSearch:
 class JavLibStore:
     @staticmethod
     def store(imgroot, kind, dbinfo, typedict, videodict):
-        for t in typedict:
+        for t in typedict.keys():
             webtool.fmkdir(os.path.join(imgroot, kind, t))
 
         params = list()
@@ -293,5 +300,49 @@ class JavLibStore:
         while data is None:
             data = work()
         return data
+
+#######################################################################
+
+class JavLibTypeCache:
+    def __init__(self, cachefile):
+        self.__cachefile = cachefile
+
+    def save(self, typedict):
+        result = None
+        try:
+            if not webtool.fmkdir(os.path.dirname(self.__cachefile)):
+                return
+
+            result = webtool.fset(self.__cachefile, webtool.jdumps(**typedict).encode(r'utf-8'))
+        finally:
+            return result
+
+    def load(self):
+        result = None
+        try:
+            result = webtool.jloads(webtool.fget(self.__cachefile).decode(r'utf-8'))
+        finally:
+            if not result:
+                result = dict()
+            return result
+
+#######################################################################
+
+def start_collect(rootpath, dbinfo, kind, url):
+    print(r'[LOG] start_collect : %s' % kind)
+
+    typecache = JavLibTypeCache(os.path.join(rootpath, r'typecache.json'))
+    typedict = typecache.load()
+    if kind in typedict.values():
+        print(r'[LOG] start_collect_ignore : %s' % kind)
+        return
+
+    tdict, videodict = JavLibSearch.search(url, typedict)
+    if tdict:
+        for key in tdict.keys():
+            typedict[key] = kind
+
+        JavLibStore.store(rootpath, kind, dbinfo, typedict, videodict)
+        typecache.save(typedict)
 
 #######################################################################
