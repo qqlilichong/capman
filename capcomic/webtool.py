@@ -153,6 +153,7 @@ def http_download(url, filename):
 
         len1 = int(resp.headers.get(r'content-length'))
         if not len1:
+            result = 0
             return
 
         len2 = len(resp.content)

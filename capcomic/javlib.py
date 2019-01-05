@@ -59,6 +59,10 @@ class JavLibDetail:
                 return
 
             result = webtool.http_download(self.__model[r'video_jacket'], filename)
+            if result == 0:
+                self.__model[r'video_jacket'] = self.__model[r'video_imgerror']
+                result = webtool.http_download(self.__model[r'video_jacket'], filename)
+
         finally:
             if not result:
                 webtool.fremove(filename)
@@ -106,6 +110,7 @@ class JavLibDetail:
     def __update(model, url):
         model[r'video_title'], model[r'video_url'] = model[r'video_title']
         model[r'video_jacket'] = webtool.http_urljoin(url, model[r'video_jacket'])
+        model[r'video_imgerror'] = webtool.http_urljoin(url, r'/img/noimagepl.gif')
         return model
 
     @staticmethod
