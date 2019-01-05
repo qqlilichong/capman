@@ -134,9 +134,6 @@ def http_get(url, headers=None):
         if not headers:
             headers = def_headers
 
-        if url.startswith(r'//'):
-            url = r'http:' + url
-
         resp = requests.get(url, timeout=30, headers=headers)
         if not resp.ok:
             return

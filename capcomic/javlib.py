@@ -48,7 +48,7 @@ class JavLibDetail:
                 if divid in self.__divs:
                     model[divid] = self.__divs[divid](div)
 
-            self.__model = self.__update(model)
+            self.__model = self.__update(model, url)
         finally:
             return self.__model
 
@@ -103,8 +103,9 @@ class JavLibDetail:
             return result
 
     @staticmethod
-    def __update(model):
+    def __update(model, url):
         model[r'video_title'], model[r'video_url'] = model[r'video_title']
+        model[r'video_jacket'] = webtool.http_urljoin(url, model[r'video_jacket'])
         return model
 
     @staticmethod
@@ -339,10 +340,11 @@ def start_collect(rootpath, dbinfo, kind, url):
 
     tdict, videodict = JavLibSearch.search(url, typedict)
     if tdict:
+        JavLibStore.store(rootpath, kind, dbinfo, tdict, videodict)
+
         for key in tdict.keys():
             typedict[key] = kind
 
-        JavLibStore.store(rootpath, kind, dbinfo, typedict, videodict)
         typecache.save(typedict)
 
 #######################################################################
