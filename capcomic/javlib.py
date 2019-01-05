@@ -155,8 +155,13 @@ class JavLibSearch:
                 result = dict(), dict()
                 return
 
+            pagedict, tdict = JavLibSearch.__pagecollect(url, tdict)
+            if not tdict:
+                result = dict(), dict()
+                return
+
             print('[LOG][JavLibSearch] - TypeCollect : %s.' % tdict.keys())
-            videodict = JavLibSearch.__videocollect(url, tdict)
+            videodict = JavLibSearch.__videocollect(pagedict)
             print('[LOG][JavLibSearch] - VideoCollect : %s.' % len(videodict))
 
             result = tdict, videodict
@@ -165,12 +170,16 @@ class JavLibSearch:
 
     @staticmethod
     def __pageselector(url):
-        pagetotal = 1
-        link = webtool.bs4get(url).find(r'div', r'page_selector').find(r'a', r"page last")
-        if link:
-            pagetotal = int(re.match(r'.*page=(\d+)', link[r'href']).group(1))
+        result = list()
+        try:
+            pagetotal = 1
+            link = webtool.bs4get(url).find(r'div', r'page_selector').find(r'a', r"page last")
+            if link:
+                pagetotal = int(re.match(r'.*page=(\d+)', link[r'href']).group(1))
 
-        return [url + r'&page=%s' % num for num in range(1, pagetotal + 1)]
+            result = [url + r'&page=%s' % num for num in range(1, pagetotal + 1)]
+        finally:
+            return result
 
     @staticmethod
     def __typecollect(url):
@@ -183,17 +192,45 @@ class JavLibSearch:
         return result
 
     @staticmethod
-    def __videocollect(url, typedict):
-        params = list()
-        for key in typedict.keys():
-            searchurl = webtool.http_urljoin(url, r'vl_searchbyid.php?keyword=%s' % key)
-            params += [{r'type': key, r'url': url} for url in JavLibSearch.__pageselector(searchurl)]
+    def __pagecollect(url, tdict):
+        params = [{r'url': url, r'type': key} for key in tdict.keys()]
+
+        result = dict()
+        for data in webtool.reducer(params, JavLibSearch.mapper_search_page):
+            result.update(data)
+
+        tdict = dict()
+        for t in result.values():
+            tdict[t] = t
+
+        return result, tdict
+
+    @staticmethod
+    def __videocollect(pagedict):
+        params = [{r'url': key, r'type': val} for key, val in pagedict.items()]
 
         result = dict()
         for data in webtool.reducer(params, JavLibSearch.mapper_search_video):
             result.update(data)
 
         return result
+
+    @staticmethod
+    def mapper_search_page(param):
+        def work():
+            result = None
+            try:
+                searchurl = webtool.http_urljoin(param[r'url'], r'vl_searchbyid.php?keyword=%s' % param['type'])
+                result = {url: param[r'type'] for url in JavLibSearch.__pageselector(searchurl)}
+            finally:
+                if result is None:
+                    print(r'[ERROR] : %s.' % param)
+                return result
+
+        data = None
+        while data is None:
+            data = work()
+        return data
 
     @staticmethod
     def mapper_search_type(param):
