@@ -6,10 +6,11 @@ import re
 import javlib
 import webtool
 import configparser
+import caper_dmzj
 
 #######################################################################
 
-def main():
+def capjav():
     dbinfo = {
         r'db': r'javlib',
         r'user': r'root',
@@ -33,13 +34,12 @@ def main():
         url = webtool.http_urljoin(rootsite, jcfg.get(section, r'url'))
         javlib.start_collect(rootpath, dbinfo, jmaker.group(1), url)
 
-    print('capman bye ...')
+    print('capjav bye ...')
+
 
 #######################################################################
 
-
 if __name__ == "__main__":
-    main()
-
+    caper_dmzj.capman(r'https://manhua.dmzj.com/tzbexysdpj/71082.shtml', r'y:/01')
 
 #######################################################################

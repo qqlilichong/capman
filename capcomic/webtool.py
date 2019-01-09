@@ -3,6 +3,7 @@
 
 import os
 import json
+import base64
 import multiprocessing
 
 import bs4
@@ -147,6 +148,10 @@ def http_get(url, headers=None):
 def http_download(url, filename):
     result = None
     try:
+        if url.startswith(r'data:'):
+            result = fset(filename, base64.b64decode(url.split(r',')[1]))
+            return
+
         resp = http_get(url)
         if not resp:
             return
