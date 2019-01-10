@@ -40,6 +40,6 @@ def capjav():
 #######################################################################
 
 if __name__ == "__main__":
-    caper_dmzj.capman(r'https://manhua.dmzj.com/tzbexysdpj/71082.shtml', r'y:/01')
+    caper_dmzj.capman(r'https://manhua.dmzj.com/tzbexysdpj/71081.shtml', r'y:/capman')
 
 #######################################################################

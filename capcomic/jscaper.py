@@ -1,6 +1,9 @@
 
 #######################################################################
 
+import uuid
+import webtool
+from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
@@ -41,6 +44,11 @@ def js():
 
 #######################################################################
 
+def newbs():
+    return webdriver.Chrome()
+
+#######################################################################
+
 def wait(bs, **kwargs):
     timeout = 30
 
@@ -62,5 +70,30 @@ def wait(bs, **kwargs):
 def get(bs, url, **kwargs):
     bs.get(url)
     return wait(bs, **kwargs)
+
+def getbid(bs, url, val):
+    return get(bs, url, id=val)
+
+def getbtn(bs, url, val):
+    return get(bs, url, tagname=val)
+
+#######################################################################
+
+def exejs(bs, sc, **kwargs):
+    bs.execute_script(js() + sc)
+    return wait(bs, **kwargs)
+
+def exejsbid(bs, sc, val):
+    return exejs(bs, sc, id=val)
+
+def exejsbtn(bs, sc, val):
+    return exejs(bs, sc, tagname=val)
+
+#######################################################################
+
+def save(bs, url, filename):
+    gid = str(uuid.uuid4())
+    img = exejs(bs, r'caper_appendimg("%s", "%s")' % (url, gid), id=gid)
+    return webtool.http_download(img.get_attribute(r'src'), filename)
 
 #######################################################################
