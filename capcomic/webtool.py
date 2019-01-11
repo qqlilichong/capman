@@ -1,10 +1,12 @@
 
 #######################################################################
 
+import re
 import os
 import json
 import base64
 import multiprocessing
+import configparser
 
 import bs4
 import requests
@@ -207,5 +209,52 @@ def bs4get(url):
         result = bs4create(http_get(url).text)
     finally:
         return result
+
+#######################################################################
+
+class IniDict(dict):
+    def __init__(self, enc=r'utf-8'):
+        self.__cfg = configparser.ConfigParser()
+        self.__data = dict()
+        self.__enc = enc
+
+    def __getattr__(self, item):
+        result = None
+        try:
+            result = self.__data[item]
+        finally:
+            return result
+
+    def read(self, filename):
+        result = None
+        try:
+            self.__cfg.read(filename, encoding=self.__enc)
+            result = self.update()
+        finally:
+            return result
+
+    def update(self):
+        result = None
+        try:
+            self.__data = {section: None for section in self.__cfg.sections()}
+            for key in self.__data:
+                self.__data[key] = {k: v for k, v in self.__cfg.items(key)}
+
+            result = self.__data
+        finally:
+            return result
+
+    def resection(self, ma):
+        result = None
+        try:
+            data = dict()
+            for k, v in self.__data.items():
+                m = re.match(ma, k)
+                if m:
+                    data[k] = m
+
+            result = data
+        finally:
+            return result
 
 #######################################################################

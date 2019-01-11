@@ -2,11 +2,8 @@
 #######################################################################
 
 import os
-import re
 import javlib
 import webtool
-import configparser
-import caper_dmzj
 
 #######################################################################
 
@@ -17,22 +14,19 @@ def capjav():
         r'passwd': r'admin',
     }
 
+    jcfg = webtool.IniDict()
     jpath = os.path.dirname(__file__)
-    jcfg = configparser.ConfigParser()
-    jcfg.read(os.path.join(jpath, r'jmakers.ini'), encoding=r'utf-8')
-    rootpath = os.path.join(jpath, jcfg.get(r'CONFIG', r'jlib'))
-    rootsite = jcfg.get(r'CONFIG', r'site')
+    jcfg.read(os.path.join(jpath, r'jmakers.ini'))
+    jcfg[r'CONFIG']
+    rootpath = os.path.join(jpath, jcfg[r'CONFIG'][r'jlib'])
+    rootsite = jcfg[r'CONFIG'][r'site']
 
-    for section in jcfg.sections():
-        jmaker = re.match(r'^JMAKER_(\w+)$', section)
-        if not jmaker:
+    for key, m in jcfg.resection(r'^JMAKER_(\w+)$').keys():
+        if jcfg[key][r'use'] != r'true':
             continue
 
-        if jcfg.get(section, r'use') != r'true':
-            continue
-
-        url = webtool.http_urljoin(rootsite, jcfg.get(section, r'url'))
-        javlib.start_collect(rootpath, dbinfo, jmaker.group(1), url)
+        url = webtool.http_urljoin(rootsite, jcfg[key][r'url'])
+        javlib.start_collect(rootpath, dbinfo, m.group(1), url)
 
     print('capjav bye ...')
 
@@ -40,6 +34,7 @@ def capjav():
 #######################################################################
 
 if __name__ == "__main__":
-    caper_dmzj.capman(r'https://manhua.dmzj.com/tzbexysdpj/71081.shtml', r'y:/capman')
+    capjav()
+    #caper_dmzj.capman(r'https://manhua.dmzj.com/snsfdpj/10574.shtml', r'y:/capman')
 
 #######################################################################
