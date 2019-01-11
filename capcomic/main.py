@@ -36,6 +36,8 @@ def caper():
             caper_dmzj.capman(url,
                               os.path.join(cfg[r'OUTPUT'][r'path'], ma.group(1), path))
 
+    print('caper bye ...')
+
 #######################################################################
 
 if __name__ == "__main__":
