@@ -212,13 +212,13 @@ def bs4get(url):
 
 #######################################################################
 
-class IniDict(dict):
+class IniDict:
     def __init__(self, enc=r'utf-8'):
         self.__cfg = configparser.ConfigParser()
         self.__data = dict()
         self.__enc = enc
 
-    def __getattr__(self, item):
+    def __getitem__(self, item):
         result = None
         try:
             result = self.__data[item]

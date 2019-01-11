@@ -29,6 +29,7 @@ class CaperDMZJ:
         return jscaper.exejsbid(self.__bs, sc, r'center_box')
 
     def __imgfile(self):
+        webtool.fmkdir(self.__path)
         imgfile = '%s' % (self.__pageidx + 1)
         return os.path.join(self.__path, r'%s.jpg' % imgfile.zfill(4))
 

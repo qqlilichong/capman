@@ -4,6 +4,7 @@
 import os
 import javlib
 import webtool
+import caper_dmzj
 
 #######################################################################
 
@@ -14,22 +15,31 @@ def capjav():
         r'passwd': r'admin',
     }
 
-    jcfg = webtool.IniDict()
+    cfg = webtool.IniDict()
     jpath = os.path.dirname(__file__)
-    jcfg.read(os.path.join(jpath, r'jmakers.ini'))
-    jcfg[r'CONFIG']
-    rootpath = os.path.join(jpath, jcfg[r'CONFIG'][r'jlib'])
-    rootsite = jcfg[r'CONFIG'][r'site']
+    cfg.read(os.path.join(jpath, r'jmakers.ini'))
+    rootpath = os.path.join(jpath, cfg[r'CONFIG'][r'jlib'])
+    rootsite = cfg[r'CONFIG'][r'site']
 
-    for key, m in jcfg.resection(r'^JMAKER_(\w+)$').keys():
-        if jcfg[key][r'use'] != r'true':
+    for jmaker, ma in cfg.resection(r'^JMAKER_(\w+)$').items():
+        if cfg[jmaker][r'use'] != r'true':
             continue
 
-        url = webtool.http_urljoin(rootsite, jcfg[key][r'url'])
-        javlib.start_collect(rootpath, dbinfo, m.group(1), url)
+        url = webtool.http_urljoin(rootsite, cfg[jmaker][r'url'])
+        javlib.start_collect(rootpath, dbinfo, ma.group(1), url)
 
     print('capjav bye ...')
 
+#######################################################################
+
+def capjav():
+    cfg = webtool.IniDict()
+    jpath = os.path.dirname(__file__)
+    cfg.read(os.path.join(jpath, r'caper.ini'))
+
+    for caper, ma in cfg.resection(r'^CAPER_(\w+)$').items():
+        if ma.group(1) == r'DMZJ':
+            output = cfg[caper]
 
 #######################################################################
 
