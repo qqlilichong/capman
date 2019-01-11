@@ -214,7 +214,6 @@ def bs4get(url):
 
 class IniDict:
     def __init__(self, enc=r'utf-8'):
-        self.__cfg = configparser.ConfigParser()
         self.__data = dict()
         self.__enc = enc
 
@@ -228,17 +227,18 @@ class IniDict:
     def read(self, filename):
         result = None
         try:
-            self.__cfg.read(filename, encoding=self.__enc)
-            result = self.update()
+            cfg = configparser.ConfigParser()
+            cfg.read(filename, encoding=self.__enc)
+            result = self.__update(cfg)
         finally:
             return result
 
-    def update(self):
+    def __update(self, cfg):
         result = None
         try:
-            self.__data = {section: None for section in self.__cfg.sections()}
-            for key in self.__data:
-                self.__data[key] = {k: v for k, v in self.__cfg.items(key)}
+            self.__data = {section: None for section in cfg.sections()}
+            for key in self.__data.keys():
+                self.__data[key] = {k: v for k, v in cfg.items(key)}
 
             result = self.__data
         finally:
@@ -248,10 +248,10 @@ class IniDict:
         result = None
         try:
             data = dict()
-            for k, v in self.__data.items():
-                m = re.match(ma, k)
+            for key in self.__data.keys():
+                m = re.match(ma, key)
                 if m:
-                    data[k] = m
+                    data[key] = m
 
             result = data
         finally:
