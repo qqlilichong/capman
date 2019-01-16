@@ -2,6 +2,7 @@
 #######################################################################
 
 import os
+import time
 import jscaper
 import webtool
 
@@ -48,6 +49,7 @@ class CaperDMZJ:
 
         # 下拉选择图片
         self.__select()
+        time.sleep(0.5)
 
         # 得到图片框架
         imgframe = webtool.http_urljoin(self.__bs.current_url, pages[self.__pageidx].get_attribute(r'value'))
