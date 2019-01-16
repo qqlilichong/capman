@@ -59,6 +59,10 @@ def wait(bs, **kwargs):
             WebDriverWait(bs, timeout).until(ec.presence_of_element_located((By.ID, val)))
             return bs.find_element_by_id(val)
 
+        if key == r'name':
+            WebDriverWait(bs, timeout).until(ec.presence_of_element_located((By.NAME, val)))
+            return bs.find_element_by_name(val)
+
         if key == r'tagname':
             WebDriverWait(bs, timeout).until(ec.presence_of_element_located((By.TAG_NAME, val)))
             return bs.find_element_by_tag_name(val)
@@ -85,6 +89,9 @@ def exejs(bs, sc, **kwargs):
 
 def exejsbid(bs, sc, val):
     return exejs(bs, sc, id=val)
+
+def exejsbna(bs, sc, val):
+    return exejs(bs, sc, name=val)
 
 def exejsbtn(bs, sc, val):
     return exejs(bs, sc, tagname=val)

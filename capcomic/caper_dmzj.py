@@ -26,7 +26,7 @@ class CaperDMZJ:
                 select_page();
             }
         ''' + (r'dmzj_select(%s);' % self.__pageidx)
-        return jscaper.exejsbid(self.__bs, sc, r'center_box')
+        return jscaper.exejsbna(self.__bs, sc, r'page_%s' % (self.__pageidx + 1))
 
     def __imgfile(self):
         webtool.fmkdir(self.__path)
