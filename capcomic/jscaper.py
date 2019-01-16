@@ -78,6 +78,9 @@ def get(bs, url, **kwargs):
 def getbid(bs, url, val):
     return get(bs, url, id=val)
 
+def getbna(bs, url, val):
+    return get(bs, url, name=val)
+
 def getbtn(bs, url, val):
     return get(bs, url, tagname=val)
 
