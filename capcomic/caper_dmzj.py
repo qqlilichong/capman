@@ -17,7 +17,7 @@ class CaperDMZJ:
         self.__pageidx = 0
 
     def close(self):
-        self.__bs.close()
+        self.__bs.quit()
 
     def __select(self):
         sc = r'''
