@@ -45,7 +45,10 @@ def js():
 #######################################################################
 
 def newbs():
-    return webdriver.Chrome()
+    options = webdriver.ChromeOptions()
+    for crx in webtool.flist(__file__, r'.crx'):
+        options.add_extension(crx)
+    return webdriver.Chrome(chrome_options=options)
 
 #######################################################################
 
@@ -67,6 +70,10 @@ def wait(bs, **kwargs):
             WebDriverWait(bs, timeout).until(ec.presence_of_element_located((By.TAG_NAME, val)))
             return bs.find_element_by_tag_name(val)
 
+        if key == r'css':
+            WebDriverWait(bs, timeout).until(ec.presence_of_element_located((By.CSS_SELECTOR, val)))
+            return bs.find_element_by_css_selector(val)
+
     return None
 
 #######################################################################
@@ -84,6 +91,9 @@ def getbna(bs, url, val):
 def getbtn(bs, url, val):
     return get(bs, url, tagname=val)
 
+def getbss(bs, url, val):
+    return get(bs, url, css=val)
+
 #######################################################################
 
 def exejs(bs, sc, **kwargs):
@@ -98,6 +108,9 @@ def exejsbna(bs, sc, val):
 
 def exejsbtn(bs, sc, val):
     return exejs(bs, sc, tagname=val)
+
+def exejsbss(bs, sc, val):
+    return exejs(bs, sc, css=val)
 
 #######################################################################
 

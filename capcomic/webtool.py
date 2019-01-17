@@ -58,6 +58,21 @@ def jloads(text):
 
 #######################################################################
 
+def flist(filename, fi):
+    result = None
+    try:
+        files = list()
+        dirname = os.path.dirname(filename)
+        for file in os.listdir(dirname):
+            if file.endswith(fi):
+                files.append(os.path.join(dirname, file))
+
+        result = files
+    finally:
+        return result
+
+#######################################################################
+
 def fmkdir(filename):
     result = None
     try:

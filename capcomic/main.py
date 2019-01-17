@@ -5,7 +5,7 @@ import os
 import webtool
 
 import javlib
-import caper_dmzj
+import caper_dmwu
 
 #######################################################################
 
@@ -31,9 +31,9 @@ def capjav():
 def caper():
     cfg = webtool.IniDict()
     cfg.read(os.path.join(os.path.dirname(__file__), r'caper.ini'))
-    for maker, ma in cfg.resection(r'^DMZJ_(\w+)$').items():
+    for maker, ma in cfg.resection(r'^DMWU_(\w+)$').items():
         for path, url in cfg[maker].items():
-            caper_dmzj.capman(url,
+            caper_dmwu.capman(url,
                               os.path.join(cfg[r'OUTPUT'][r'path'], ma.group(1), path))
 
     print('caper bye ...')
