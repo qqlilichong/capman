@@ -11,6 +11,7 @@ import webtool
 class CaperDMWU:
     def __init__(self, main, path):
         self.__bs = jscaper.newbs()
+        jscaper.wait(self.__bs, css=r'div#app.wrapper.wrapper--version-3')
         self.__main = main
         self.__path = path
         self.__pagecount = self.__refresh()
