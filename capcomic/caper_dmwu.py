@@ -11,7 +11,6 @@ import webtool
 class CaperDMWU:
     def __init__(self, main, path):
         self.__bs = jscaper.newbs()
-        jscaper.wait(self.__bs, css=r'div#app.wrapper.wrapper--version-3')
         self.__main = main
         self.__path = path
         self.__pagecount = self.__refresh()
@@ -38,27 +37,32 @@ class CaperDMWU:
         return int(re.match(r'.*-p(\d+)/', chaps[-1].get_attribute(r'href')).group(1))
 
     def next(self):
-        if self.__pageidx >= self.__pagecount:
-            return None
+        result = None
+        try:
+            if self.__pageidx >= self.__pagecount:
+                result = True
+                return
 
-        # 选择图片
-        imgframe = self.__select()
+            # 选择图片
+            imgframe = self.__select()
 
-        # 跳转到图片框架
-        img = jscaper.getbss(self.__bs, imgframe, r'img#cp_image')
-        img = jscaper.getbtn(self.__bs, img.get_attribute(r'src'), r'img')
+            # 跳转到图片框架
+            img = jscaper.getbss(self.__bs, imgframe, r'img#cp_image')
+            img = jscaper.getbtn(self.__bs, img.get_attribute(r'src'), r'img')
 
-        # 保存图片
-        jscaper.save(self.__bs, img.get_attribute(r'src'), self.__imgfile())
-        self.__pageidx += 1
-        return True
+            # 保存图片
+            jscaper.save(self.__bs, img.get_attribute(r'src'), self.__imgfile())
+            self.__pageidx += 1
+
+        finally:
+            return result
 
 #######################################################################
 
 def capman(url, path):
     caper = CaperDMWU(url, path)
     try:
-        while caper.next():
+        while not caper.next():
             pass
     finally:
         caper.close()

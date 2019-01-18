@@ -53,7 +53,7 @@ def newbs():
 #######################################################################
 
 def wait(bs, **kwargs):
-    timeout = 60
+    timeout = 30
 
     for key, val in kwargs.items():
         key = key.lower()
