@@ -30,10 +30,18 @@ class CaperDMWU:
         return os.path.join(self.__path, r'%s.jpg' % imgfile.zfill(4))
 
     def __gomain(self):
-        return jscaper.getbss(self.__bs, self.__main, r'div#chapterpager.chapterpager')
+        result = None
+        try:
+            chap = jscaper.getbss(self.__bs, self.__main, r'div#chapterpager.chapterpager')
+            result = chap.find_elements_by_tag_name(r'a')
+        finally:
+            return result
 
     def __refresh(self):
-        chaps = self.__gomain().find_elements_by_tag_name(r'a')
+        chaps = None
+        while not chaps:
+            chaps = self.__gomain()
+
         return int(re.match(r'.*-p(\d+)/', chaps[-1].get_attribute(r'href')).group(1))
 
     def next(self):
