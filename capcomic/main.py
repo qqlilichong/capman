@@ -5,6 +5,7 @@ import os
 import webtool
 
 import javlib
+import stocklib
 import caper_dmwu
 
 #######################################################################
@@ -28,14 +29,20 @@ def capjav():
 
 #######################################################################
 
+def capstock():
+    stocklib.start_collect()
+
+#######################################################################
+
 def caper():
     cfg = webtool.IniDict()
     cfg.read(os.path.join(os.path.dirname(__file__), r'caper.ini'))
-    for maker, ma in cfg.resection(r'^DMWU_(\w+)$').items():
-        for path, url in cfg[maker].items():
-            caper_dmwu.capman(url,
-                              os.path.join(cfg[r'OUTPUT'][r'path'], ma.group(1), path))
-
+    for maker in cfg.resection(r'^DMWU_(\w+)$').keys():
+        caper_dmwu.capman(cfg[maker][r'url'],
+                          os.path.join(cfg[r'OUTPUT'][r'path'], cfg[maker][r'title']),
+                          cfg[maker][r'match'],
+                          cfg[maker][r'format'],
+                          cfg[maker][r'reverse'])
     print('caper bye ...')
 
 #######################################################################

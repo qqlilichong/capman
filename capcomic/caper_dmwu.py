@@ -67,12 +67,36 @@ class CaperDMWU:
 
 #######################################################################
 
-def capman(url, path):
+def docap(url, path):
     caper = CaperDMWU(url, path)
     try:
         while not caper.next():
             pass
     finally:
         caper.close()
+
+def capman(url, path, rm, fmt, rev):
+    result = None
+    try:
+        lis = list()
+        for link in webtool.bs4get(url).find(r'ul', id=r'detail-list-select-1').findAll(r'a'):
+            title = link.get_text()
+            if re.match(rm, title):
+                lis.append(webtool.http_urljoin(url, link[r'href']))
+
+        if rev == 'True':
+            lis.reverse()
+
+        num = 0
+        for link in lis:
+            num += 1
+            docap(link, os.path.join(path, fmt % str(num).zfill(4)))
+
+        result = True
+    finally:
+        if not result:
+            print(r'failed.')
+
+        return result
 
 #######################################################################
