@@ -67,7 +67,8 @@ class CaperDMWU:
 
 #######################################################################
 
-def docap(url, path):
+def docap(param):
+    url, path = param
     caper = CaperDMWU(url, path)
     try:
         while not caper.next():
@@ -75,7 +76,7 @@ def docap(url, path):
     finally:
         caper.close()
 
-def capman(url, path, rm, fmt, rev):
+def capman(url, path, rm, fmt, fmtf, rev):
     result = None
     try:
         lis = list()
@@ -87,11 +88,13 @@ def capman(url, path, rm, fmt, rev):
         if rev == 'True':
             lis.reverse()
 
+        params = list()
         num = 0
         for link in lis:
             num += 1
-            docap(link, os.path.join(path, fmt % str(num).zfill(4)))
+            params.append((link, os.path.join(path, fmt % str(num).zfill(int(fmtf)))))
 
+        webtool.reducer(params, docap, 8)
         result = True
     finally:
         if not result:

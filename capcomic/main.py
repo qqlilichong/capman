@@ -42,12 +42,13 @@ def caper():
                           os.path.join(cfg[r'OUTPUT'][r'path'], cfg[maker][r'title']),
                           cfg[maker][r'match'],
                           cfg[maker][r'format'],
+                          cfg[maker][r'formatfill'],
                           cfg[maker][r'reverse'])
     print('caper bye ...')
 
 #######################################################################
 
 if __name__ == "__main__":
-    capstock()
+    caper()
 
 #######################################################################
