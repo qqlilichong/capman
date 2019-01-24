@@ -38,6 +38,9 @@ class StockModel:
             # 财务指标
             model[r'_cwzb_'] = self.cwzb(info)
 
+            # 重点关注
+            model[r'_zdgz_'] = self.zdgz(info)
+
             # 其他指标
             model[r'_qtzb_'] = self.qtzb(model)
 
@@ -72,6 +75,12 @@ class StockModel:
 
         data[r'NETSHARE'] = '%.2f' % (float(data[r'NETSHARE']) / 10000)
         data[r'TOTALSHARE'] = '%.2f' % (float(data[r'TOTALSHARE']) / 10000)
+        return data
+
+    def zdgz(self, info):
+        data = dict()
+        for d in self.__vars(info, r'zdgzData'):
+            data[d[r'rq'].split(r'T')[0]] = r'%s : %s' % (d[r'sjlx'], d[r'sjms'])
         return data
 
     @staticmethod
@@ -113,6 +122,8 @@ class StockModel:
             _qtzb_=r'4.其他指标',
             NETVAL=r'4.1~流通市值(亿)',
             TOTALVAL=r'4.2~总市值(亿)',
+
+            _zdgz_=r'5.重点关注',
         )
 
         if key not in data.keys():
@@ -125,12 +136,20 @@ class StockModel:
         return re.findall(r'var %s\s*=\s*(.*);' % val, txt)[0]
 
     @staticmethod
+    def __vars(txt, val):
+        return eval(StockModel.__va(txt, val))
+
+    @staticmethod
     def __var(txt, val):
-        return eval(StockModel.__va(txt, val))[0]
+        return StockModel.__vars(txt, val)[0]
+
+    @staticmethod
+    def __vaks(txt, val, key):
+        return re.findall(r'"%s"\s*:\s*"(.*?)"' % key, StockModel.__va(txt, val))
 
     @staticmethod
     def __vak(txt, val, key):
-        return re.findall(r'"%s"\s*:\s*"(.*?)"' % key, StockModel.__va(txt, val))[0]
+        return StockModel.__vaks(txt, val, key)[0]
 
 #######################################################################
 
