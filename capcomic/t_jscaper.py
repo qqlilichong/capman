@@ -44,12 +44,15 @@ def js():
 
 #######################################################################
 
-def newbs():
+def newbs(crx=False):
     options = webdriver.ChromeOptions()
-    for crx in t_webtool.flist(__file__, r'.crx'):
-        options.add_extension(crx)
 
-    options.add_argument(r'--headless')
+    if crx:
+        for crx in t_webtool.flist(__file__, r'.crx'):
+            options.add_extension(crx)
+    else:
+        options.add_argument(r'--headless')
+
     return webdriver.Chrome(chrome_options=options)
 
 #######################################################################
