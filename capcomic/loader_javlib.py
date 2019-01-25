@@ -14,7 +14,7 @@ def capman():
 
     cfg = webtool.IniDict()
     proot = os.path.dirname(__file__)
-    cfg.read(os.path.join(proot, r'jmakers.ini'))
+    cfg.read(os.path.join(proot, r'configer_jmakers.ini'))
     proot = os.path.join(proot, cfg[r'CONFIG'][r'path'])
     for maker, ma in cfg.resection(r'^JMAKER_(\w+)$').items():
         javlib.start_collect(proot,
