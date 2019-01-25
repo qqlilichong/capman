@@ -6,6 +6,7 @@ import t_webtool
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support import expected_conditions as ec
 
 #######################################################################
@@ -44,6 +45,11 @@ def js():
 
 #######################################################################
 
+def timeout():
+    return 10
+
+#######################################################################
+
 def newbs(crx=False):
     options = webdriver.ChromeOptions()
 
@@ -52,31 +58,34 @@ def newbs(crx=False):
             options.add_extension(crx)
     else:
         options.add_argument(r'--headless')
+        options.add_argument(r'--disable-gpu')
 
-    return webdriver.Chrome(chrome_options=options)
+    pls = DesiredCapabilities.CHROME
+    pls[r'pageLoadStrategy'] = r'none'
+    dr = webdriver.Chrome(chrome_options=options, desired_capabilities=pls)
+    dr.implicitly_wait(timeout())
+    return dr
 
 #######################################################################
 
 def wait(bs, **kwargs):
-    timeout = 30
-
     for key, val in kwargs.items():
         key = key.lower()
 
         if key == r'id':
-            WebDriverWait(bs, timeout).until(ec.presence_of_element_located((By.ID, val)))
+            WebDriverWait(bs, timeout()).until(ec.presence_of_element_located((By.ID, val)))
             return bs.find_element_by_id(val)
 
         if key == r'name':
-            WebDriverWait(bs, timeout).until(ec.presence_of_element_located((By.NAME, val)))
+            WebDriverWait(bs, timeout()).until(ec.presence_of_element_located((By.NAME, val)))
             return bs.find_element_by_name(val)
 
         if key == r'tagname':
-            WebDriverWait(bs, timeout).until(ec.presence_of_element_located((By.TAG_NAME, val)))
+            WebDriverWait(bs, timeout()).until(ec.presence_of_element_located((By.TAG_NAME, val)))
             return bs.find_element_by_tag_name(val)
 
         if key == r'css':
-            WebDriverWait(bs, timeout).until(ec.presence_of_element_located((By.CSS_SELECTOR, val)))
+            WebDriverWait(bs, timeout()).until(ec.presence_of_element_located((By.CSS_SELECTOR, val)))
             return bs.find_element_by_css_selector(val)
 
     return None
