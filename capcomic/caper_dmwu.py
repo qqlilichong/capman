@@ -3,14 +3,14 @@
 
 import re
 import os
-import jscaper
-import webtool
+import t_jscaper
+import t_webtool
 
 #######################################################################
 
 class CaperDMWU:
     def __init__(self, main, path):
-        self.__bs = jscaper.newbs()
+        self.__bs = t_jscaper.newbs()
         self.__main = main
         self.__path = path
         self.__pagecount = self.__refresh()
@@ -25,14 +25,14 @@ class CaperDMWU:
         return self.__main.replace(items[-1], r'%s-p%s' % (items[-1], self.__pageidx + 1))
 
     def __imgfile(self):
-        webtool.fmkdir(self.__path)
+        t_webtool.fmkdir(self.__path)
         imgfile = '%s' % (self.__pageidx + 1)
         return os.path.join(self.__path, r'%s.jpg' % imgfile.zfill(4))
 
     def __gomain(self):
         result = None
         try:
-            chap = jscaper.getbss(self.__bs, self.__main, r'div#chapterpager.chapterpager')
+            chap = t_jscaper.getbss(self.__bs, self.__main, r'div#chapterpager.chapterpager')
             result = chap.find_elements_by_tag_name(r'a')
         finally:
             return result
@@ -55,11 +55,11 @@ class CaperDMWU:
             imgframe = self.__select()
 
             # 跳转到图片框架
-            img = jscaper.getbss(self.__bs, imgframe, r'img#cp_image')
-            img = jscaper.getbtn(self.__bs, img.get_attribute(r'src'), r'img')
+            img = t_jscaper.getbss(self.__bs, imgframe, r'img#cp_image')
+            img = t_jscaper.getbtn(self.__bs, img.get_attribute(r'src'), r'img')
 
             # 保存图片
-            jscaper.save(self.__bs, img.get_attribute(r'src'), self.__imgfile())
+            t_jscaper.save(self.__bs, img.get_attribute(r'src'), self.__imgfile())
             self.__pageidx += 1
 
         finally:
@@ -80,10 +80,10 @@ def capman(url, path, rm, fmt, fmtf, rev):
     result = None
     try:
         lis = list()
-        for link in webtool.bs4get(url).find(r'ul', id=r'detail-list-select-1').findAll(r'a'):
+        for link in t_webtool.bs4get(url).find(r'ul', id=r'detail-list-select-1').findAll(r'a'):
             title = link.get_text()
             if re.match(rm, title):
-                lis.append(webtool.http_urljoin(url, link[r'href']))
+                lis.append(t_webtool.http_urljoin(url, link[r'href']))
 
         if rev == 'True':
             lis.reverse()
@@ -94,7 +94,7 @@ def capman(url, path, rm, fmt, fmtf, rev):
             num += 1
             params.append((link, os.path.join(path, fmt % str(num).zfill(int(fmtf)))))
 
-        webtool.reducer(params, docap, 8)
+        t_webtool.reducer(params, docap, 8)
         result = True
     finally:
         if not result:

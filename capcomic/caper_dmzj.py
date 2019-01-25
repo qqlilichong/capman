@@ -3,14 +3,14 @@
 
 import os
 import time
-import jscaper
-import webtool
+import t_jscaper
+import t_webtool
 
 #######################################################################
 
 class CaperDMZJ:
     def __init__(self, main, path):
-        self.__bs = jscaper.newbs()
+        self.__bs = t_jscaper.newbs()
         self.__main = main
         self.__path = path
         self.__pagecount = len(self.__refresh())
@@ -27,15 +27,15 @@ class CaperDMZJ:
                 select_page();
             }
         ''' + (r'dmzj_select(%s);' % self.__pageidx)
-        return jscaper.exejsbna(self.__bs, sc, r'page_%s' % (self.__pageidx + 1))
+        return t_jscaper.exejsbna(self.__bs, sc, r'page_%s' % (self.__pageidx + 1))
 
     def __imgfile(self):
-        webtool.fmkdir(self.__path)
+        t_webtool.fmkdir(self.__path)
         imgfile = '%s' % (self.__pageidx + 1)
         return os.path.join(self.__path, r'%s.jpg' % imgfile.zfill(4))
 
     def __gomain(self):
-        return jscaper.getbid(self.__bs, self.__main, r'page_select')
+        return t_jscaper.getbid(self.__bs, self.__main, r'page_select')
 
     def __refresh(self):
         return self.__gomain().find_elements_by_tag_name(r'option')
@@ -52,13 +52,13 @@ class CaperDMZJ:
         time.sleep(0.5)
 
         # 得到图片框架
-        imgframe = webtool.http_urljoin(self.__bs.current_url, pages[self.__pageidx].get_attribute(r'value'))
+        imgframe = t_webtool.http_urljoin(self.__bs.current_url, pages[self.__pageidx].get_attribute(r'value'))
 
         # 跳转到图片框架
-        img = jscaper.getbtn(self.__bs, imgframe, r'img')
+        img = t_jscaper.getbtn(self.__bs, imgframe, r'img')
 
         # 保存图片
-        jscaper.save(self.__bs, img.get_attribute(r'src'), self.__imgfile())
+        t_jscaper.save(self.__bs, img.get_attribute(r'src'), self.__imgfile())
         self.__pageidx += 1
         return True
 

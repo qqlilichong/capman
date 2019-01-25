@@ -2,7 +2,7 @@
 #######################################################################
 
 import uuid
-import webtool
+import t_webtool
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -46,7 +46,7 @@ def js():
 
 def newbs():
     options = webdriver.ChromeOptions()
-    for crx in webtool.flist(__file__, r'.crx'):
+    for crx in t_webtool.flist(__file__, r'.crx'):
         options.add_extension(crx)
     return webdriver.Chrome(chrome_options=options)
 
@@ -117,6 +117,6 @@ def exejsbss(bs, sc, val):
 def save(bs, url, filename):
     gid = str(uuid.uuid4())
     img = exejs(bs, r'caper_appendimg("%s", "%s")' % (url, gid), id=gid)
-    return webtool.http_download(img.get_attribute(r'src'), filename)
+    return t_webtool.http_download(img.get_attribute(r'src'), filename)
 
 #######################################################################

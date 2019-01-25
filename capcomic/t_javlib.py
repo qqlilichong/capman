@@ -3,8 +3,8 @@
 
 import os
 import re
-import dbe
-import webtool
+import t_dbe
+import t_webtool
 
 #######################################################################
 
@@ -18,7 +18,7 @@ def video_type(vid):
 
 class JavLibDetail:
     def __init__(self, url):
-        self.__divs = webtool.mkd(
+        self.__divs = t_webtool.mkd(
             video_id=self.__video_id,
             video_title=self.__video_title,
             video_jacket=self.__video_jacket,
@@ -43,7 +43,7 @@ class JavLibDetail:
         self.__model = None
         try:
             model = dict()
-            for div in webtool.bs4get(url).findAll(r'div', id=re.compile(r'video_\w+')):
+            for div in t_webtool.bs4get(url).findAll(r'div', id=re.compile(r'video_\w+')):
                 divid = div[r'id']
                 if divid in self.__divs:
                     model[divid] = self.__divs[divid](div)
@@ -58,14 +58,14 @@ class JavLibDetail:
             if not self.__model:
                 return
 
-            result = webtool.http_download(self.__model[r'video_jacket'], filename)
+            result = t_webtool.http_download(self.__model[r'video_jacket'], filename)
             if result == 0:
                 self.__model[r'video_jacket'] = self.__model[r'video_imgerror']
-                result = webtool.http_download(self.__model[r'video_jacket'], filename)
+                result = t_webtool.http_download(self.__model[r'video_jacket'], filename)
 
         finally:
             if not result:
-                webtool.fremove(filename)
+                t_webtool.fremove(filename)
 
             return result
 
@@ -109,8 +109,8 @@ class JavLibDetail:
     @staticmethod
     def __update(model, url):
         model[r'video_title'], model[r'video_url'] = model[r'video_title']
-        model[r'video_jacket'] = webtool.http_urljoin(url, model[r'video_jacket'])
-        model[r'video_imgerror'] = webtool.http_urljoin(url, r'/img/noimagepl.gif')
+        model[r'video_jacket'] = t_webtool.http_urljoin(url, model[r'video_jacket'])
+        model[r'video_imgerror'] = t_webtool.http_urljoin(url, r'/img/noimagepl.gif')
         return model
 
     @staticmethod
@@ -137,7 +137,7 @@ class JavLibDetail:
     def __video_items(div):
         result = list()
         for it in div.findAll(r'a'):
-            result.append(webtool.mkd(
+            result.append(t_webtool.mkd(
                 id=re.match(r'.*\?(.*)', it[r'href']).group(1),
                 url=r'',
                 name=it.get_text().strip()
@@ -178,7 +178,7 @@ class JavLibSearch:
         result = list()
         try:
             pagetotal = 1
-            link = webtool.bs4get(url).find(r'div', r'page_selector').find(r'a', r"page last")
+            link = t_webtool.bs4get(url).find(r'div', r'page_selector').find(r'a', r"page last")
             if link:
                 pagetotal = int(re.match(r'.*page=(\d+)', link[r'href']).group(1))
 
@@ -191,7 +191,7 @@ class JavLibSearch:
         params = [{r'url': d} for d in JavLibSearch.__pageselector(url)]
 
         result = dict()
-        for data in webtool.reducer(params, JavLibSearch.mapper_search_type):
+        for data in t_webtool.reducer(params, JavLibSearch.mapper_search_type):
             result.update(data)
 
         return result
@@ -201,7 +201,7 @@ class JavLibSearch:
         params = [{r'url': url, r'type': key} for key in tdict.keys()]
 
         result = dict()
-        for data in webtool.reducer(params, JavLibSearch.mapper_search_page):
+        for data in t_webtool.reducer(params, JavLibSearch.mapper_search_page):
             result.update(data)
 
         tdict = dict()
@@ -215,7 +215,7 @@ class JavLibSearch:
         params = [{r'url': key, r'type': val} for key, val in pagedict.items()]
 
         result = dict()
-        for data in webtool.reducer(params, JavLibSearch.mapper_search_video):
+        for data in t_webtool.reducer(params, JavLibSearch.mapper_search_video):
             result.update(data)
 
         return result
@@ -225,7 +225,7 @@ class JavLibSearch:
         def work():
             result = None
             try:
-                searchurl = webtool.http_urljoin(param[r'url'], r'vl_searchbyid.php?keyword=%s' % param['type'])
+                searchurl = t_webtool.http_urljoin(param[r'url'], r'vl_searchbyid.php?keyword=%s' % param['type'])
                 result = {url: param[r'type'] for url in JavLibSearch.__pageselector(searchurl)}
             finally:
                 if result is None:
@@ -243,7 +243,7 @@ class JavLibSearch:
             result = None
             try:
                 ret = dict()
-                for div in webtool.bs4get(param[r'url']).findAll(r'div', r'video'):
+                for div in t_webtool.bs4get(param[r'url']).findAll(r'div', r'video'):
                     vtype = video_type(video_id(div.find(r'div', r'id').get_text()))
                     ret[vtype] = vtype
 
@@ -264,10 +264,10 @@ class JavLibSearch:
             result = None
             try:
                 ret = dict()
-                for div in webtool.bs4get(param[r'url']).findAll(r'div', r'video'):
+                for div in t_webtool.bs4get(param[r'url']).findAll(r'div', r'video'):
                     vid = video_id(div.find(r'div', r'id').get_text())
                     if re.match(r'^%s\W+\d+$' % param[r'type'], vid):
-                        ret[vid] = webtool.http_urljoin(param[r'url'], div.a[r'href'])
+                        ret[vid] = t_webtool.http_urljoin(param[r'url'], div.a[r'href'])
 
                 result = ret
             finally:
@@ -286,13 +286,13 @@ class JavLibStore:
     @staticmethod
     def store(imgroot, kind, dbinfo, typedict, videodict):
         for t in typedict.keys():
-            webtool.fmkdir(os.path.join(imgroot, kind, t))
+            t_webtool.fmkdir(os.path.join(imgroot, kind, t))
 
         params = list()
         for vid, url in videodict.items():
             fid = r'%s/%s/%s.jpg' % (kind, video_type(vid), vid)
             filename = os.path.join(imgroot, fid)
-            if not webtool.fexists(filename):
+            if not t_webtool.fexists(filename):
                 params.append({
                     r'id': vid,
                     r'fid': fid,
@@ -302,7 +302,7 @@ class JavLibStore:
                 })
 
         result = dict()
-        for data in webtool.reducer(params, JavLibStore.mapper_store_detail):
+        for data in t_webtool.reducer(params, JavLibStore.mapper_store_detail):
             result.update(data)
 
         return result
@@ -314,7 +314,7 @@ class JavLibStore:
             try:
                 ret = dict()
 
-                dbs = dbe.DBEngine()
+                dbs = t_dbe.DBEngine()
                 if not dbs.connect(**param[r'dbinfo']):
                     print(r'[ERROR] : DBEngine.')
                     return
@@ -335,7 +335,7 @@ class JavLibStore:
                 result = ret
             finally:
                 if result is None:
-                    webtool.fremove(param[r'file'])
+                    t_webtool.fremove(param[r'file'])
                     print(r'[ERROR] : %s.' % param)
                 return result
 
@@ -353,17 +353,17 @@ class JavLibTypeCache:
     def save(self, typedict):
         result = None
         try:
-            if not webtool.fmkdir(os.path.dirname(self.__cachefile)):
+            if not t_webtool.fmkdir(os.path.dirname(self.__cachefile)):
                 return
 
-            result = webtool.fset(self.__cachefile, webtool.jdumps(**typedict).encode(r'utf-8'))
+            result = t_webtool.fset(self.__cachefile, t_webtool.jdumps(**typedict).encode(r'utf-8'))
         finally:
             return result
 
     def load(self):
         result = None
         try:
-            result = webtool.jloads(webtool.fget(self.__cachefile).decode(r'utf-8'))
+            result = t_webtool.jloads(t_webtool.fget(self.__cachefile).decode(r'utf-8'))
         finally:
             if not result:
                 result = dict()

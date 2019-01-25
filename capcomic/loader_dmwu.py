@@ -2,13 +2,13 @@
 #######################################################################
 
 import os
-import webtool
+import t_webtool
 import caper_dmwu
 
 #######################################################################
 
 def capman():
-    cfg = webtool.IniDict()
+    cfg = t_webtool.IniDict()
     cfg.read(os.path.join(os.path.dirname(__file__), r'caper.ini'))
     for maker in cfg.resection(r'^DMWU_(\w+)$').keys():
         caper_dmwu.capman(cfg[maker][r'url'],

@@ -2,7 +2,7 @@
 #######################################################################
 
 import re
-import webtool
+import t_webtool
 
 #######################################################################
 
@@ -26,7 +26,7 @@ class StockModel:
         result = None
         try:
             model = dict()
-            info = webtool.http_get(r'http://data.eastmoney.com/stockdata/%s.html' % sid)
+            info = t_webtool.http_get(r'http://data.eastmoney.com/stockdata/%s.html' % sid)
             info = info.content.decode(r'gb2312')
 
             # 基本信息
@@ -50,7 +50,7 @@ class StockModel:
             return result
 
     def jbxx(self, info):
-        data = webtool.mkd(
+        data = t_webtool.mkd(
             ID=self.__vak(info, r'hypmData', r'Code'),
             NAME=self.__vak(info, r'hypmData', r'Name'),
             PRICE=self.__var(info, r'gdzjcData')[r'Close'],
@@ -58,7 +58,7 @@ class StockModel:
         return data
 
     def hyzb(self, info):
-        data = webtool.mkd(
+        data = t_webtool.mkd(
             PROFIT=self.__vak(info, r'hypmData', r'Profit'),
             PERATION=self.__vak(info, r'hypmData', r'PERation'),
             PBRATION=self.__vak(info, r'hypmData', r'PBRation'),
@@ -99,7 +99,7 @@ class StockModel:
 
     @staticmethod
     def __trans(key):
-        data = webtool.mkd(
+        data = t_webtool.mkd(
             _jbxx_=r'1.基本信息',
             ID=r'1.1~股票代码',
             NAME=r'1.2~股票名称',
