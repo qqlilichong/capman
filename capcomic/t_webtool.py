@@ -138,7 +138,7 @@ def fset(filename, content, fmode=r'wb'):
 
 #######################################################################
 
-def http_get(url, headers=None):
+def http_get(url, headers=None, err=None):
     result = None
     try:
         def_headers = {
@@ -149,11 +149,13 @@ def http_get(url, headers=None):
                 'QQBrowser/9.7.13021.400',
         }
 
-        if not headers:
-            headers = def_headers
+        if headers:
+            def_headers.update(headers)
 
-        resp = requests.get(url, timeout=30, headers=headers)
+        resp = requests.get(url, timeout=30, headers=def_headers)
         if not resp.ok:
+            if err:
+                err(resp)
             return
 
         result = resp
@@ -162,14 +164,14 @@ def http_get(url, headers=None):
 
 #######################################################################
 
-def http_download(url, filename):
+def http_download(url, filename, headers=None, err=None):
     result = None
     try:
         if url.startswith(r'data:'):
             result = fset(filename, base64.b64decode(url.split(r',')[1]))
             return
 
-        resp = http_get(url)
+        resp = http_get(url, headers, err)
         if not resp:
             return
 
@@ -221,7 +223,8 @@ def bs4create(text, engine=r'html5lib'):
 def bs4get(url):
     result = None
     try:
-        result = bs4create(http_get(url).text)
+        resp = http_get(url)
+        result = bs4create(resp.content.decode(requests.utils.get_encodings_from_content(resp.text)[0]))
     finally:
         return result
 
