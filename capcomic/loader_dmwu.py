@@ -10,7 +10,7 @@ import t_webtool
 
 class CaperDMWU:
     def __init__(self, main, path):
-        self.__bs = t_jscaper.newbs()
+        self.__bs = t_jscaper.newbs(True)
         self.__main = main
         self.__path = path
         self.__pagecount = self.__refresh()
@@ -94,7 +94,7 @@ def capman(url, path, rm, fmt, fmtf, rev):
             num += 1
             params.append((link, os.path.join(path, fmt % str(num).zfill(int(fmtf)))))
 
-        t_webtool.reducer(params, docap, 8)
+        t_webtool.reducer(params, docap, 4)
         result = True
     finally:
         if not result:

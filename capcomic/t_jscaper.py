@@ -50,18 +50,19 @@ def timeout():
 
 #######################################################################
 
-def newbs(did=r'chrome', crx=False, hl=False, dc=False):
+def newbs(hl=False, crx=False, dc=False, did=r'chrome'):
     dr = None
 
     if did == r'chrome':
         options = webdriver.ChromeOptions()
 
-        if crx:
-            for crx in t_webtool.flist(__file__, r'.crx'):
-                options.add_extension(crx)
         if hl:
             options.add_argument(r'--headless')
             options.add_argument(r'--disable-gpu')
+
+        if crx:
+            for crx in t_webtool.flist(__file__, r'.crx'):
+                options.add_extension(crx)
 
         pls = None
         if dc:
@@ -71,6 +72,7 @@ def newbs(did=r'chrome', crx=False, hl=False, dc=False):
         dr = webdriver.Chrome(chrome_options=options, desired_capabilities=pls)
 
     dr.implicitly_wait(timeout())
+    dr.minimize_window()
     return dr
 
 #######################################################################
