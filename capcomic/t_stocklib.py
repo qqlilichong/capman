@@ -79,7 +79,7 @@ class StockModel:
     def zdgz(self, info):
         data = dict()
         for d in self.__vars(info, r'zdgzData'):
-            data[d[r'rq'].split(r'T')[0]] = r'%s : %s' % (d[r'sjlx'], d[r'sjms'])
+            data[r'%s(%s)' % (d[r'rq'].split(r'T')[0], t_webtool.mkid()[:4])] = r'%s : %s' % (d[r'sjlx'], d[r'sjms'])
         return data
 
     @staticmethod

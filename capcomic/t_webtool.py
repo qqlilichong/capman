@@ -4,13 +4,24 @@
 import re
 import os
 import json
+import uuid
 import base64
+import hashlib
 import multiprocessing
 import configparser
 
 import bs4
 import requests
 from urllib.parse import urljoin
+
+#######################################################################
+
+def mkid():
+    result = None
+    try:
+        result = hashlib.sha1(str(uuid.uuid1()).encode()).hexdigest()
+    finally:
+        return result
 
 #######################################################################
 
