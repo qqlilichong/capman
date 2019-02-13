@@ -26,8 +26,7 @@ class StockModel:
         result = None
         try:
             model = dict()
-            info = t_webtool.http_get(r'http://data.eastmoney.com/stockdata/%s.html' % sid)
-            info = info.content.decode(r'gb2312')
+            info = t_webtool.bs4get(r'http://data.eastmoney.com/stockdata/%s.html' % sid).text
 
             # 基本信息
             model[r'_jbxx_'] = self.jbxx(info)
