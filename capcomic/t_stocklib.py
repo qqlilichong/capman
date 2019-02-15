@@ -40,6 +40,9 @@ class StockModel:
             # 重点关注
             model[r'_zdgz_'] = self.zdgz(info)
 
+            # 核心题材
+            model[r'_hxtc_'] = self.hxtc(info)
+
             # 其他指标
             model[r'_qtzb_'] = self.qtzb(model)
 
@@ -80,6 +83,12 @@ class StockModel:
         data = dict()
         for d in self.__vars(info, r'zdgzData'):
             data[r'%s(%s)' % (d[r'rq'].split(r'T')[0], t_webtool.mkid()[:4])] = r'%s : %s' % (d[r'sjlx'], d[r'sjms'])
+        return data
+
+    def hxtc(self, info):
+        data = dict()
+        for d in self.__vars(info, r'hxtxData'):
+            data[r'(%s)[%s]' % (d[r'MainPoint'].zfill(4), d[r'KeyWords'])] = d[r'MainPointCon']
         return data
 
     @staticmethod
@@ -123,6 +132,8 @@ class StockModel:
             TOTALVAL=r'4.2~总市值(亿)',
 
             _zdgz_=r'5.重点关注',
+
+            _hxtc_=r'6.核心题材'
         )
 
         if key not in data.keys():
