@@ -56,6 +56,7 @@ class StockModel:
             ID=self.__vak(info, r'hypmData', r'Code'),
             NAME=self.__vak(info, r'hypmData', r'Name'),
             PRICE=self.__var(info, r'gdzjcData')[r'Close'],
+            VOL=r'%.2f' % (float(self.__vak(info, r'defaultKdata', r'a')) / 10000),
         )
         return data
 
@@ -112,6 +113,7 @@ class StockModel:
             ID=r'1.1~股票代码',
             NAME=r'1.2~股票名称',
             PRICE=r'1.3~股票价格(元)',
+            VOL=r'1.4~成交量(万元)',
 
             _hyzb_=r'2.行业指标',
             PERATION=r'2.1~市盈率',
