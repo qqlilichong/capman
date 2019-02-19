@@ -52,11 +52,13 @@ class StockModel:
             return result
 
     def jbxx(self, info):
+        stock = self.__vad(info, r'stock')
         data = t_webtool.mkd(
             ID=self.__vak(info, r'hypmData', r'Code'),
             NAME=self.__vak(info, r'hypmData', r'Name'),
             PRICE=self.__var(info, r'gdzjcData')[r'Close'],
             VOL=r'%.2f' % (float(self.__vak(info, r'defaultKdata', r'a')) / 10000),
+            HY=r'%s(%s-%s)' % (stock[r'hyName'], stock[r'hyCode'], stock[r'hyCodeInt'])
         )
         return data
 
@@ -114,6 +116,7 @@ class StockModel:
             NAME=r'1.2~股票名称',
             PRICE=r'1.3~股票价格(元)',
             VOL=r'1.4~成交量(万元)',
+            HY=r'1.5~行业名称',
 
             _hyzb_=r'2.行业指标',
             PERATION=r'2.1~市盈率',
@@ -162,6 +165,12 @@ class StockModel:
     @staticmethod
     def __vak(txt, val, key):
         return StockModel.__vaks(txt, val, key)[0]
+
+    @staticmethod
+    def __vad(txt, key):
+        txt = re.findall(r'var %s\s*=\s*(.*?);' % key, txt, re.MULTILINE | re.DOTALL)[0]
+        return {cc[0].strip(): cc[1].strip()
+                for cc in re.findall(r'(\w+)\s*:\s*"(\w+)"', txt, re.MULTILINE | re.DOTALL)}
 
 #######################################################################
 
