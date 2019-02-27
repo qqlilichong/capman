@@ -177,7 +177,12 @@ class StockModel:
         result = None
         try:
             dbmodel = dict()
-            dbmodel[r'_jbxx_'] = self.__model[r'_jbxx_']
+            dbmodel.update(self.__model[r'_jbxx_'])
+            dbmodel.update(self.__model[r'_hyzb_'])
+            dbmodel.update(self.__model[r'_cwzb_'])
+            dbmodel.update(self.__model[r'_qtzb_'])
+            dbmodel[r'zdgz'] = t_webtool.jdumps(**self.__model[r'_zdgz_'])
+            dbmodel[r'hxtc'] = t_webtool.jdumps(**self.__model[r'_hxtc_'])
             result = dbmodel
         finally:
             return result
@@ -188,10 +193,9 @@ def start_collect():
     st = StockModel(r'601186')
     print(st)
 
-    data = st.dbmodel()
     dbs = t_dbe.DBEngine()
     dbs.connect(db=r'stocklib', user=r'root', passwd=r'root')
-    dbs.replace(r'detail', **data[r'_jbxx_'])
+    dbs.replace(r'detail', **st.dbmodel())
     dbs.commit()
 
 #######################################################################
