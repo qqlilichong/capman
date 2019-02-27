@@ -3,6 +3,7 @@
 
 import re
 import t_webtool
+import t_dbe
 
 #######################################################################
 
@@ -172,10 +173,25 @@ class StockModel:
         return {cc[0].strip(): cc[1].strip()
                 for cc in re.findall(r'(\w+)\s*:\s*"(\w+)"', txt, re.MULTILINE | re.DOTALL)}
 
+    def dbmodel(self):
+        result = None
+        try:
+            dbmodel = dict()
+            dbmodel[r'_jbxx_'] = self.__model[r'_jbxx_']
+            result = dbmodel
+        finally:
+            return result
+
 #######################################################################
 
 def start_collect():
     st = StockModel(r'601186')
     print(st)
+
+    data = st.dbmodel()
+    dbs = t_dbe.DBEngine()
+    dbs.connect(db=r'stocklib', user=r'root', passwd=r'root')
+    dbs.replace(r'detail', **data[r'_jbxx_'])
+    dbs.commit()
 
 #######################################################################
