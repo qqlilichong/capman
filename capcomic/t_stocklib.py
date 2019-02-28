@@ -68,8 +68,8 @@ class StockModel:
             hy = r'%s(%s-%s)' % (stock[r'hyName'], stock[r'hyCode'], stock[r'hyCodeInt'])
 
         return t_webtool.mkd(
-            ID=self.__vak(info, r'hypmData', r'Code'),
-            NAME=self.__vak(info, r'hypmData', r'Name'),
+            ID=self.__vak(info, r'defaultKdata', r'code'),
+            NAME=self.__vak(info, r'defaultKdata', r'name'),
             PRICE=price,
             VOL=r'%.2f' % (float(vol) / 10000),
             HY=hy,
@@ -102,6 +102,9 @@ class StockModel:
 
     def zdgz(self, info):
         data = dict()
+        if not self.__vabase(info, r'zdgzData'):
+            return data
+
         for d in self.__vars(info, r'zdgzData'):
             data[r'%s(%s)' % (d[r'rq'].split(r'T')[0], t_webtool.mkid()[:4])] = r'%s : %s' % (d[r'sjlx'], d[r'sjms'])
         return data
@@ -165,8 +168,12 @@ class StockModel:
         return data[key]
 
     @staticmethod
+    def __vabase(txt, val):
+        return re.findall(r'var %s\s*=\s*(.*);' % val, txt)
+
+    @staticmethod
     def __va(txt, val):
-        return re.findall(r'var %s\s*=\s*(.*);' % val, txt)[0]
+        return StockModel.__vabase(txt, val)[0]
 
     @staticmethod
     def __vars(txt, val):
@@ -206,17 +213,33 @@ class StockModel:
 
 #######################################################################
 
-def start_collect():
-    dbs = t_dbe.DBEngine()
-    dbs.connect(db=r'stocklib', user=r'root', passwd=r'root')
+def __mapper_collect(param):
+    def work():
+        result = None
+        try:
+            dbs = t_dbe.DBEngine()
+            if not dbs.connect(**param[r'dbinfo']):
+                print(r'[ERROR] : DBEngine.')
+                return
 
-    for code in t_tushare.codes_sh():
-        st = None
-        while not st:
-            print(r'%s collecting ...' % code)
-            st = StockModel(code)
+            print(r'[COLLECT] : %s' % param[r'code'])
+            dbmodel = StockModel(param[r'code']).dbmodel()
+            dbs.replace(r'detail', **dbmodel)
+            dbs.commit()
 
-        dbs.replace(r'detail', **st.dbmodel())
-        dbs.commit()
+            result = True
+        finally:
+            return result
+
+    data = None
+    while data is None:
+        data = work()
+    return data
+
+#######################################################################
+
+def start_collect(dbinfo):
+    t_webtool.reducer([{r'code': code, r'dbinfo': dbinfo} for code in t_tushare.codes_sh()],
+                      __mapper_collect, 4)
 
 #######################################################################
