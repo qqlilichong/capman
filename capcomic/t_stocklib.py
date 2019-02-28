@@ -239,7 +239,7 @@ def __mapper_collect(param):
 #######################################################################
 
 def start_collect(dbinfo):
-    t_webtool.reducer([{r'code': code, r'dbinfo': dbinfo} for code in t_tushare.codes_sh()],
+    t_webtool.reducer([{r'code': code, r'dbinfo': dbinfo} for code in t_tushare.codes_hs()],
                       __mapper_collect, 8)
 
 #######################################################################

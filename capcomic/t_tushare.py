@@ -29,4 +29,7 @@ def codes_sh():
 def codes_sz():
     return qcodes(r'SZSE')
 
+def codes_hs():
+    return codes_sh() + codes_sz()
+
 #######################################################################
