@@ -235,7 +235,8 @@ def bs4get(url):
     result = None
     try:
         resp = http_get(url)
-        result = bs4create(resp.content.decode(requests.utils.get_encodings_from_content(resp.text)[0]))
+        resp.encoding = requests.utils.get_encodings_from_content(resp.text)[0]
+        result = bs4create(resp.text)
     finally:
         return result
 

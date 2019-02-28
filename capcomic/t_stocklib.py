@@ -4,6 +4,7 @@
 import re
 import t_webtool
 import t_dbe
+import t_tushare
 
 #######################################################################
 
@@ -53,15 +54,26 @@ class StockModel:
             return result
 
     def jbxx(self, info):
+        price = self.__vak(info, r'defaultKdata', r'c')
+        if price == r'-':
+            price = r'0'
+
+        vol = self.__vak(info, r'defaultKdata', r'a')
+        if vol == r'-':
+            vol = r'0'
+
+        hy = r'-'
         stock = self.__vad(info, r'stock')
-        data = t_webtool.mkd(
+        if r'hyName' in stock.keys():
+            hy = r'%s(%s-%s)' % (stock[r'hyName'], stock[r'hyCode'], stock[r'hyCodeInt'])
+
+        return t_webtool.mkd(
             ID=self.__vak(info, r'hypmData', r'Code'),
             NAME=self.__vak(info, r'hypmData', r'Name'),
-            PRICE=self.__var(info, r'gdzjcData')[r'Close'],
-            VOL=r'%.2f' % (float(self.__vak(info, r'defaultKdata', r'a')) / 10000),
-            HY=r'%s(%s-%s)' % (stock[r'hyName'], stock[r'hyCode'], stock[r'hyCodeInt'])
+            PRICE=price,
+            VOL=r'%.2f' % (float(vol) / 10000),
+            HY=hy,
         )
-        return data
 
     def hyzb(self, info):
         data = t_webtool.mkd(
@@ -71,13 +83,18 @@ class StockModel:
             ROE=self.__vak(info, r'hypmData', r'ROE'),
         )
 
-        data[r'PROFIT'] = '%.2f' % (float(data[r'PROFIT']) / 100000000)
+        if data[r'PROFIT'] and data[r'PROFIT'] != r'-':
+            data[r'PROFIT'] = '%.2f' % (float(data[r'PROFIT']) / 100000000)
+
         return data
 
     def cwzb(self, info):
         data = self.__var(info, r'cwzbData')
         for k, v in data.items():
-            data[k] = '%.3f' % float(v)
+            if v:
+                data[k] = '%.3f' % float(v)
+            else:
+                data[k] = r'-'
 
         data[r'NETSHARE'] = '%.2f' % (float(data[r'NETSHARE']) / 10000)
         data[r'TOTALSHARE'] = '%.2f' % (float(data[r'TOTALSHARE']) / 10000)
@@ -190,12 +207,16 @@ class StockModel:
 #######################################################################
 
 def start_collect():
-    st = StockModel(r'601186')
-    print(st)
-
     dbs = t_dbe.DBEngine()
     dbs.connect(db=r'stocklib', user=r'root', passwd=r'root')
-    dbs.replace(r'detail', **st.dbmodel())
-    dbs.commit()
+
+    for code in t_tushare.codes_sh():
+        st = None
+        while not st:
+            print(r'%s collecting ...' % code)
+            st = StockModel(code)
+
+        dbs.replace(r'detail', **st.dbmodel())
+        dbs.commit()
 
 #######################################################################
