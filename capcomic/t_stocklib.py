@@ -70,7 +70,7 @@ class StockModel:
         return t_webtool.mkd(
             ID=self.__vak(info, r'defaultKdata', r'code'),
             NAME=self.__vak(info, r'defaultKdata', r'name'),
-            PRICE=price,
+            PRICE=price.zfill(7),
             VOL=r'%.2f' % (float(vol) / 10000),
             HY=hy,
         )
@@ -240,6 +240,6 @@ def __mapper_collect(param):
 
 def start_collect(dbinfo):
     t_webtool.reducer([{r'code': code, r'dbinfo': dbinfo} for code in t_tushare.codes_sh()],
-                      __mapper_collect, 4)
+                      __mapper_collect, 8)
 
 #######################################################################
