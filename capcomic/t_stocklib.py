@@ -76,6 +76,10 @@ class StockModel:
         )
 
     def hyzb(self, info):
+        data = dict()
+        if not self.__vabase(info, r'hypmData'):
+            return data
+
         data = t_webtool.mkd(
             PROFIT=self.__vak(info, r'hypmData', r'Profit'),
             PERATION=self.__vak(info, r'hypmData', r'PERation'),
