@@ -126,7 +126,9 @@ class StockModel:
         ts = float(model[r'_cwzb_'][r'TOTALSHARE'])
         data = dict()
         data[r'NETVAL'] = '%.2f' % (pr * ns)
+        data[r'NETVAL'] = data[r'NETVAL'].zfill(8)
         data[r'TOTALVAL'] = '%.2f' % (pr * ts)
+        data[r'TOTALVAL'] = data[r'TOTALVAL'].zfill(8)
         return data
 
     @staticmethod
