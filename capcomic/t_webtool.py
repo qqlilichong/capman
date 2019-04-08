@@ -30,6 +30,7 @@ def reducer(dlist, handler, maxps=32):
     try:
         ps = len(dlist)
         if not ps:
+            result = []
             return
 
         if ps > maxps:
