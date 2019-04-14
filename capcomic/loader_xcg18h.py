@@ -2,38 +2,72 @@
 #######################################################################
 
 import os
-import t_webtool
+import t_webtool as t
 
 #######################################################################
 
-def mapper_imagedown(url, file):
+def website(path, xid):
+    return r'https://xcg123.herokuapp.com/series/%s/%s' % (path, xid)
+
+#######################################################################
+
+def mapper_image(params):
+    if t.fexists(params[r'file']):
+        return t.mkd(result=r'fexists')
+
     headers = {
         r'Host': r'img.177pic.info'
     }
-    return t_webtool.http_download(url, file, headers)
+    if not t.http_download(params[r'url'], params[r'file'], headers):
+        return None
+
+    return t.mkd(result=r'ok')
+
+#######################################################################
+
+def mapper_chapter(params):
+    url = r'%s/%s' % (website(r'chapter', params[r'BOOK']), params[r'Id'])
+    imageset = t.jloads(t.http_get(url).text)
+    if not imageset[r'Successful']:
+        return None
+
+    cidx = t.zf(imageset[r'Data'][r'Index'])
+    dst = os.path.join(params[r'DST'], cidx)
+    t.fmkdir(dst)
+
+    index = 0
+    for image in imageset[r'Data'][r'Images']:
+        if not mapper_image({
+            r'url': image[r'Path'],
+            r'file': os.path.join(dst, '%s-%s.jpg' % (cidx, t.zf(index))),
+        }):
+            return None
+        index += 1
+
+    return t.mkd(result=r'ok')
+
+#######################################################################
+
+def mapper_chapterset(params):
+    url = website(r'show', params[r'BOOK'])
+    chapterset = t.jloads(t.http_get(url).text)
+    if not chapterset[r'Successful']:
+        return None
+
+    for chapter in chapterset[r'Data'][r'Chapters']:
+        chapter.update(params)
+        if not mapper_chapter(chapter):
+            return None
+
+    return t.mkd(result=r'ok')
 
 #######################################################################
 
 def loader_main():
-    if True:
-        os.environ[r'HTTP_PROXY'] = r'http://192.168.200.1:1080'
-        os.environ[r'HTTPS_PROXY'] = os.environ[r'HTTP_PROXY']
-
-    img_begin = 6
-    img_end = 791
-    dir_dst = r'./xcg18h'
-
-    t_webtool.fmkdir(dir_dst)
-
-    for idx in range(img_begin, img_end + 1):
-        idx = str(idx).zfill(3)
-        file_dst = os.path.join(dir_dst, r'%s.jpg' % idx)
-        url = r'http://img.177pic.info/uploads/2013/11h/P%s.jpg' % idx
-        if not mapper_imagedown(url, file_dst):
-            print(r'[ERROR] : %s' % url)
-            return None
-
-    return True
+    return mapper_chapterset({
+        r'BOOK': r'EBB88E4E349782F6366B5404C70D1B7A',
+        r'DST': r'./xcg18h'
+    })
 
 #######################################################################
 

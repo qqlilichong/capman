@@ -16,6 +16,12 @@ from urllib.parse import urljoin
 
 #######################################################################
 
+def zf(data, width=3, inc=1):
+    data = int(data) + inc
+    return str(data).zfill(width)
+
+#######################################################################
+
 def mkid():
     result = None
     try:
