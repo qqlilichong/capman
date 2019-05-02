@@ -94,7 +94,7 @@ def capman(url, path, rm, fmt, fmtf, rev):
             num += 1
             params.append((link, os.path.join(path, fmt % str(num).zfill(int(fmtf)))))
 
-        t_webtool.reducer(params, docap, 4)
+        t_webtool.reducer(params, docap, 8)
         result = True
     finally:
         if not result:

@@ -69,7 +69,9 @@ def newbs(hl=False, crx=False, dc=False, did=r'chrome'):
             pls = DesiredCapabilities.CHROME
             pls[r'pageLoadStrategy'] = r'none'
 
-        dr = webdriver.Chrome(chrome_options=options, desired_capabilities=pls)
+        dr = webdriver.Chrome(chrome_options=options,
+                              desired_capabilities=pls,
+                              executable_path=r'../chrome/chromedriver')
 
     dr.implicitly_wait(timeout())
     dr.minimize_window()
