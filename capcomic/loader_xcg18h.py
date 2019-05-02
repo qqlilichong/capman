@@ -2,6 +2,7 @@
 #######################################################################
 
 import os
+import time
 import t_webtool as t
 
 #######################################################################
@@ -18,8 +19,8 @@ def mapper_image(params):
     headers = {
         r'Host': r'img.177pic.info'
     }
-    if not t.http_download(params[r'url'], params[r'file'], headers):
-        return None
+    while not t.http_download(params[r'url'], params[r'file'], headers):
+        time.sleep(1)
 
     return t.mkd(result=r'ok')
 
@@ -65,8 +66,10 @@ def mapper_chapterset(params):
 
 def loader_main():
     return mapper_chapterset({
-        r'BOOK': r'EBB88E4E349782F6366B5404C70D1B7A',
-        r'DST': r'./xcg18h'
+        r'BOOK': r'A1F3825FE6E62AED7A521988D7B6F7A4',
+        r'DST': r'../../../XCG18H'
+                '/A1F3825FE6E62AED7A521988D7B6F7A4/'
+                '[中文] [はんざきじろう] ままごと 扮家家酒[女友后宫][200P]'
     })
 
 #######################################################################
