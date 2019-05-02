@@ -21,8 +21,9 @@ def loader_phone(phones):
     number = 1
     for phone in phones:
         print(r'%s : %s' % (number, phone))
-        bs = t_webtool.bs4get(r'http://www.ip138.com:8080/search.asp?mobile=%s&action=mobile' % phone)
-        position = re.findall(r'卡号归属地(.*)卡 类 型', bs.text, re.DOTALL | re.MULTILINE)[0]
+        text = t_webtool.http_get(r'http://www.ip138.com:8080/search.asp?mobile=%s&action=mobile' % phone)
+        text = text.content.decode(r'utf-8')
+        position = re.findall(r'卡号归属地(.*)卡 类 型', text, re.DOTALL | re.MULTILINE)[0]
         position = re.findall(r'\w+', position)
 
         prov = position[0]
