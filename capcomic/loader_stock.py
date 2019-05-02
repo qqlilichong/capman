@@ -9,7 +9,7 @@ import t_stocklib
 #######################################################################
 
 def loader_main():
-    t_stocklib.start_collect(t_webtool.mkd(db=r'stocklib', user=r'root', passwd=r'root'))
+    t_stocklib.start_collect(t_webtool.mkd(db=r'stocklib', user=r'root', passwd=r'admin'))
 
 #######################################################################
 

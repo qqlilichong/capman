@@ -28,7 +28,7 @@ class StockModel:
         result = None
         try:
             model = dict()
-            info = t_webtool.bs4get(r'http://data.eastmoney.com/stockdata/%s.html' % sid).text
+            info = t_webtool.http_get(r'http://data.eastmoney.com/stockdata/%s.html' % sid).content.decode(r'gbk')
 
             # 基本信息
             model[r'_jbxx_'] = self.jbxx(info)
@@ -77,18 +77,18 @@ class StockModel:
 
     def hyzb(self, info):
         data = dict()
-        if not self.__vabase(info, r'hypmData'):
+        if not self.__vabase(info, r'hypmDatainfo'):
             return data
 
         data = t_webtool.mkd(
-            PROFIT=self.__vak(info, r'hypmData', r'Profit'),
-            PERATION=self.__vak(info, r'hypmData', r'PERation'),
-            PBRATION=self.__vak(info, r'hypmData', r'PBRation'),
-            ROE=self.__vak(info, r'hypmData', r'ROE'),
+            PROFIT=self.__vak(info, r'cwzyData', r'retainedProfits'),
+            PERATION=self.__vak(info, r'hypmDatainfo', r'PE9'),
+            PBRATION=self.__vak(info, r'hypmDatainfo', r'PB8'),
+            ROE=self.__vak(info, r'hypmDatainfo', r'ROE'),
         )
 
         if data[r'PROFIT'] and data[r'PROFIT'] != r'-':
-            data[r'PROFIT'] = '%.2f' % (float(data[r'PROFIT']) / 100000000)
+            data[r'PROFIT'] = '%.2f' % (float(data[r'PROFIT']) / 10000)
 
         return data
 
@@ -175,27 +175,34 @@ class StockModel:
 
     @staticmethod
     def __vabase(txt, val):
-        return re.findall(r'var %s\s*=\s*(.*);' % val, txt)
+        return re.findall(r'var %s\s*=\s*(.*)' % val, txt)
 
     @staticmethod
     def __va(txt, val):
-        return StockModel.__vabase(txt, val)[0]
+        result = StockModel.__vabase(txt, val)
+        return result[0]
 
     @staticmethod
     def __vars(txt, val):
-        return eval(StockModel.__va(txt, val))
+        result = StockModel.__va(txt, val)
+        result = result.replace(r';', r'')
+        return eval(result)
 
     @staticmethod
     def __var(txt, val):
-        return StockModel.__vars(txt, val)[0]
+        result = StockModel.__vars(txt, val)
+        return result[0]
 
     @staticmethod
     def __vaks(txt, val, key):
-        return re.findall(r'"%s"\s*:\s*"(.*?)"' % key, StockModel.__va(txt, val))
+        result = StockModel.__va(txt, val)
+        result = result.replace(r'"', r'')
+        return re.findall(r'\W+%s\s*:\s*([\*\-\w]+|[-+]?[0-9]*\.?[0-9]+),' % key, result)
 
     @staticmethod
     def __vak(txt, val, key):
-        return StockModel.__vaks(txt, val, key)[0]
+        result = StockModel.__vaks(txt, val, key)
+        return result[0]
 
     @staticmethod
     def __vad(txt, key):
@@ -246,6 +253,6 @@ def __mapper_collect(param):
 
 def start_collect(dbinfo):
     t_webtool.reducer([{r'code': code, r'dbinfo': dbinfo} for code in t_tushare.codes_hs()],
-                      __mapper_collect, 8)
+                      __mapper_collect, 16)
 
 #######################################################################
