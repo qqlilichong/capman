@@ -136,6 +136,28 @@ def fremove(filename):
 
 #######################################################################
 
+def rmempty(path):
+    def work():
+        r = []
+        for root, dirs, files in os.walk(path):
+            if not os.listdir(root):
+                r.append(root)
+        return r
+
+    result = list()
+    while True:
+        data = work()
+        if not data:
+            break
+
+        for d in data:
+            result.append(d)
+            os.rmdir(d)
+
+    return result
+
+#######################################################################
+
 def fget(filename, fmode=r'rb'):
     result = None
     try:
