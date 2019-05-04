@@ -14,9 +14,7 @@ def pagecount(total):
 #######################################################################
 
 def subject(title):
-    title = re.match(r'(.*)\[.*\]', title)[1]
-    title = title.strip()
-    return title
+    return re.match(r'(.*)\[.*\]', title)[1].strip()
 
 #######################################################################
 
@@ -24,7 +22,10 @@ def mapper_image(params):
     def work():
         result = None
         try:
-            result = t.http_download(params[r'url'], params[r'image'])
+            if not t.http_download(params[r'url'], params[r'image']):
+                return
+
+            result = True
         finally:
             if result is None:
                 print(r'[ERROR] : %s.' % params[r'url'])
@@ -41,16 +42,19 @@ def mapper_detail(params):
     def work():
         result = None
         try:
-            bs = t.bs4get(params[r'url'])
-            if not bs:
+            imgs = t.bs4get(params[r'url']).findAll(r'img')
+            if not imgs:
                 return
 
             # caper all images.
             images = dict()
-            for img in bs.findAll(r'img'):
+            for img in imgs:
                 if r'aid' not in img.attrs:
                     continue
                 images[img[r'file']] = os.path.join(params[r'dst'], img[r'aid'] + r'.jpg')
+
+            if not images:
+                return
 
             result = images
         finally:
@@ -69,12 +73,12 @@ def mapper_productpage(params):
     def work():
         result = None
         try:
-            bs = t.bs4get(params[r'url'])
-            if not bs:
+            divs = t.bs4get(params[r'url']).findAll(r'div', r'bus_vtem')
+            if not divs:
                 return
 
             details = dict()
-            for div in bs.findAll(r'div', r'bus_vtem'):
+            for div in divs:
                 link = div.a
                 dst = os.path.join(params[r'dst'], subject(link[r'title']))
 
@@ -130,20 +134,34 @@ def mapper_product(params):
 
 #######################################################################
 
+def backup():
+    # TuiGirl推女郎
+    # https://www.aisinei.org/forum-tuigirl-%s.html
+
+    # XIUREN秀人网
+    # https://www.aisinei.org/forum-xiuren-%s.html
+
+    # Goddes头条女神
+    # https://www.aisinei.org/forum-goddes-%s.html
+
+    # BeautyLeg
+    # https://www.aisinei.org/forum-beautyleg-%s.html
+
+    pass
+
 def loader_main():
     params = dict()
-    params[r'url'] = r'https://www.aisinei.org/forum-xiuren-%s.html'
-    params[r'dst'] = r'D:/TOSHIBA/AISINEI/%s' % r'XIUREN秀人网'
+    params[r'dst'] = r'D:/TOSHIBA/AISINEI/%s' % r'TuiGirl推女郎'
+    params[r'url'] = r'https://www.aisinei.org/forum-tuigirl-%s.html'
     mapper_product(params)
     fail = t.rmempty(params[r'dst'])
     if fail:
         print(r'[Bad] : %s' % fail)
 
-    print(r'Done.')
-
 #######################################################################
 
 if __name__ == "__main__":
     loader_main()
+    print(r'Done.')
 
 #######################################################################
