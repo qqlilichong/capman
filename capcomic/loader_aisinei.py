@@ -3,6 +3,7 @@
 
 import os
 import re
+import time
 import t_webtool as t
 
 #######################################################################
@@ -29,6 +30,7 @@ def mapper_image(params):
         finally:
             if result is None:
                 print(r'[ERROR] : %s.' % params[r'url'])
+                time.sleep(1)
             return result
 
     data = None
@@ -49,9 +51,9 @@ def mapper_detail(params):
             # caper all images.
             images = dict()
             for img in imgs:
-                if r'aid' not in img.attrs:
+                if r'aid' in img.attrs:
+                    images[img[r'file']] = os.path.join(params[r'dst'], img[r'aid'] + r'.jpg')
                     continue
-                images[img[r'file']] = os.path.join(params[r'dst'], img[r'aid'] + r'.jpg')
 
             if not images:
                 return
@@ -60,6 +62,7 @@ def mapper_detail(params):
         finally:
             if result is None:
                 print(r'[ERROR] : %s.' % params[r'url'])
+                time.sleep(1)
             return result
 
     data = None
@@ -91,6 +94,7 @@ def mapper_productpage(params):
         finally:
             if result is None:
                 print(r'[ERROR] : %s.' % params[r'url'])
+                time.sleep(1)
             return result
 
     data = None
@@ -151,8 +155,8 @@ def backup():
 
 def loader_main():
     params = dict()
-    params[r'dst'] = r'D:/TOSHIBA/AISINEI/%s' % r'TuiGirl推女郎'
-    params[r'url'] = r'https://www.aisinei.org/forum-tuigirl-%s.html'
+    params[r'dst'] = r'D:/TOSHIBA/AISINEI/%s' % r'Goddes头条女神'
+    params[r'url'] = r'https://www.aisinei.org/forum-goddes-%s.html'
     mapper_product(params)
     fail = t.rmempty(params[r'dst'])
     if fail:
