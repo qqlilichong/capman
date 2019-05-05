@@ -49,14 +49,24 @@ def mapper_detail(params):
                 return
 
             # caper all images.
-            images = dict()
+            imagelist = list()
             for img in imgs:
                 if r'aid' in img.attrs:
-                    images[img[r'file']] = os.path.join(params[r'dst'], img[r'aid'] + r'.jpg')
+                    imagelist.append(img[r'file'])
                     continue
 
-            if not images:
+                if r'title' in img.attrs:
+                    imagelist.append(img[r'src'])
+                    continue
+
+            if not imagelist:
                 return
+
+            images = dict()
+            index = 0
+            for img in imagelist:
+                images[img] = os.path.join(params[r'dst'], r'%s.jpg' % t.zf(index))
+                index += 1
 
             result = images
         finally:
@@ -138,25 +148,27 @@ def mapper_product(params):
 
 #######################################################################
 
-def backup():
-    # TuiGirl推女郎
-    # https://www.aisinei.org/forum-tuigirl-%s.html
+def productlist():
+    result = list()
 
-    # XIUREN秀人网
-    # https://www.aisinei.org/forum-xiuren-%s.html
+    k = r'Goddes头条女神'
+    v = r'https://www.aisinei.org/forum-goddes-%s.html'
+    result.append((k, v))
 
-    # Goddes头条女神
-    # https://www.aisinei.org/forum-goddes-%s.html
+    k = r'TuiGirl推女郎'
+    v = r'https://www.aisinei.org/forum-tuigirl-%s.html'
+    result.append((k, v))
 
-    # BeautyLeg
-    # https://www.aisinei.org/forum-beautyleg-%s.html
+    return result
 
-    pass
+#######################################################################
 
 def loader_main():
+    k, v = productlist()[-1]
+
     params = dict()
-    params[r'dst'] = r'D:/TOSHIBA/AISINEI/%s' % r'Goddes头条女神'
-    params[r'url'] = r'https://www.aisinei.org/forum-goddes-%s.html'
+    params[r'dst'] = r'D:/TOSHIBA/AISINEI/%s' % k
+    params[r'url'] = v
     mapper_product(params)
     fail = t.rmempty(params[r'dst'])
     if fail:
