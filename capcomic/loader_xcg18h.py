@@ -65,11 +65,12 @@ def mapper_chapterset(params):
 #######################################################################
 
 def loader_main():
+    book = r''
+    title = r''
+
     return mapper_chapterset({
-        r'BOOK': r'A1F3825FE6E62AED7A521988D7B6F7A4',
-        r'DST': r'../../../XCG18H'
-                '/A1F3825FE6E62AED7A521988D7B6F7A4/'
-                '[中文] [はんざきじろう] ままごと 扮家家酒[女友后宫][200P]'
+        r'BOOK': book,
+        r'DST': r'../../../XCG18H/%s/%s' % (book, title)
     })
 
 #######################################################################
