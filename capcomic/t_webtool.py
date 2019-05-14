@@ -13,6 +13,7 @@ import configparser
 import bs4
 import requests
 from urllib.parse import urljoin
+from lxml import etree
 
 #######################################################################
 
@@ -315,5 +316,22 @@ class IniDict:
             result = data
         finally:
             return result
+
+#######################################################################
+# etree
+def exp(url, dec=None):
+    html = http_get(url).content
+    if dec:
+        html = html.decode(dec)
+    return etree.HTML(html)
+
+def exps(obj):
+    return obj[0].strip()
+
+def expa(obj, a, p=r'.//'):
+    return exps(obj.xpath(r'%s@%s' % (p, a)))
+
+def expt(obj, p=r'.//'):
+    return exps(obj.xpath(r'%stext()' % p))
 
 #######################################################################

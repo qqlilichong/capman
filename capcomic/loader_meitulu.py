@@ -2,68 +2,91 @@
 #######################################################################
 
 import os
-import re
-import t_webtool
+import time
+import t_webtool as t
 
 #######################################################################
 
-def __pagelist(url):
-    nums = list()
+def query_pgs(url):
+    result = None
+    try:
+        data = [url]
+        for x in t.exp(url).xpath(r'//*[@class = "pg"]//a[not(@class)]/@href'):
+            data.append(t.http_urljoin(url, x))
 
-    bs = t_webtool.bs4get(url)
-    for link in bs.find(r'div', r'text-c').findAll(r'a'):
-        if not link.has_attr(r'href'):
-            continue
-
-        num = link.get_text()
-        if not num.isnumeric():
-            continue
-
-        nums.append(int(num))
-
-    pl = [url]
-    for i in range(2, max(nums) + 1):
-        pl.append(t_webtool.http_urljoin(url, r'./%s.html' % i))
-    return pl
+        result = data
+    finally:
+        return result
 
 #######################################################################
 
-def __mapper_collecter(param):
+def query_pg_images(url):
+    result = None
+    try:
+        data = list()
+        for x in t.exp(url).xpath(r'//*[@class = "adw"]//img/@src'):
+            data.append(t.http_urljoin(url, x))
+
+        result = data
+    finally:
+        return result
+
+#######################################################################
+
+def query_product_page(url, dst):
+    result = None
+    try:
+        threadinfos = dict()
+        for group in t.exp(url, r'utf-8').xpath(r'//*[@class = "group"]'):
+            link = group.xpath(r'.//*[@class = "bution"]//a')[0]
+            threadurl = t.http_urljoin(url, t.expa(link, r'href'))
+            thread = dict()
+            thread[r'cover'] = t.exps(group.xpath(r'.//*[@class = "photo"]//img/@src'))
+            thread[r'url'] = threadurl
+            thread[r'subject'] = t.expt(link)
+            thread[r'dst'] = dst
+            for v in thread.values():
+                if not v:
+                    return
+            threadinfos[threadurl] = thread
+
+        result = threadinfos
+    finally:
+        return result
+
+#######################################################################
+
+def mapper_pg(params):
     def work():
         result = None
         try:
-            ret = dict()
+            # ignore exist thread.
+            dst = os.path.join(params[r'dst'], params[r'subject'])
+            if os.path.exists(dst):
+                result = dict()
+                return
 
-            for li in t_webtool.bs4get(param[r'url']).find(r'ul', r'img').findAll(r'li'):
-                title = li.find(r'p', r'p_title').get_text().strip()
-                title = title.replace(r' ', r'')
-                title = title.replace(r'\\', r'')
-                title = title.replace(r'/', r'')
-                title = title.replace(r'"', r'')
-                title = title.replace(r"'", r'')
-                for label in re.findall(r'(\[.*\])', title):
-                    title = title.replace(label, r'')
+            pgs = query_pgs(params[r'url'])
+            if not pgs:
+                return
 
-                pid = re.findall(r'/(\d+)/', li.a.img[r'src'])[-1]
+            pginfos = dict()
+            index = 0
+            for pgurl in pgs:
+                pginfo = dict()
+                pginfo[r'url'] = pgurl
+                pginfo[r'dst'] = dst
+                pginfo[r'cover'] = params[r'cover']
+                pginfo[r'pidx'] = t.zf(index)
+                pginfos[pgurl] = pginfo
+                index += 1
 
-                title = r'[%s]%s' % (pid.zfill(6), title)
-                path = os.path.join(param[r'path'], title)
-                if os.path.exists(path):
-                    continue
-
-                pc = int(re.findall(r'图片.*?(\d+).*', li.get_text())[0])
-                for i in range(0, pc + 1):
-                    key = t_webtool.http_urljoin(li.a.img[r'src'], r'./%s' % r'%s.jpg' % i)
-                    ret[key] = dict()
-                    ret[key][r'url'] = key
-                    ret[key][r'path'] = path
-                    ret[key][r'file'] = r'%s.jpg' % str(i).zfill(4)
-                    ret[key][r'header'] = {r'Referer': param[r'referer'] % key}
-
-            result = ret
+            t.fmkdir(dst)
+            result = pginfos
         finally:
             if result is None:
-                print(r'[ERROR] : %s.' % param)
+                print(r'[ERROR] : %s.' % params[r'url'])
+                time.sleep(1)
             return result
 
     data = None
@@ -73,32 +96,87 @@ def __mapper_collecter(param):
 
 #######################################################################
 
-def __mapper_downloader(param):
+def fiximg(url):
+    data = [i for i in url.split(r'.jpg') if i]
+    if len(data) != 1:
+        url = data[0] + r'.jpg'
+
+    url = url.replace(r'<br />', r'')
+    url = url.replace(r'1178//', r'1178/T/')
+    url = url.replace('\r\n', r'')
+    url = url.replace('\n', r'')
+    if url.endswith(r'/'):
+        return None
+    return url
+
+def mapper_img(params):
     def work():
         result = None
         try:
-            ret = dict()
+            images = query_pg_images(params[r'url'])
+            if not images:
+                return
+
+            imginfos = dict()
+
+            # cover image.
+            cover = dict()
+            cover[r'url'] = params[r'cover']
+            cover[r'dst'] = os.path.join(params[r'dst'], r'cover.jpg')
+            imginfos[cover[r'url']] = cover
+
+            # content images.
+            index = 0
+            for img in images:
+                img = fiximg(img)
+                if not img:
+                    continue
+
+                imginfo = dict()
+                imginfo[r'url'] = img
+                imginfo[r'dst'] = os.path.join(params[r'dst'],
+                                               r'%s-%s.jpg' % (params[r'pidx'], t.zf(index)))
+                imginfos[img] = imginfo
+                index += 1
+
+            result = imginfos
+        finally:
+            if result is None:
+                print(r'[ERROR] : %s.' % params[r'url'])
+                time.sleep(1)
+            return result
+
+    data = None
+    while data is None:
+        data = work()
+    return data
+
+#######################################################################
+
+def mapper_get(params):
+    def work():
+        result = None
+        try:
             ig = False
 
             def onerr(resp):
-                if resp.status_code == 403 or resp.status_code == 404:
+                if resp.status_code == 500:
                     nonlocal ig
                     ig = True
 
-            t_webtool.fmkdir(param[r'path'])
-            if not t_webtool.http_download(param[r'url'],
-                                           os.path.join(param[r'path'], param[r'file']),
-                                           param[r'header'],
-                                           onerr):
+            if not t.http_download(params[r'url'], params[r'dst'],
+                                   None,
+                                   onerr):
                 if ig:
-                    print(r'[IG]%s' % param[r'url'])
-                    result = ret
+                    result = True
+                    print(r'[IGNORE] : %s.' % params[r'url'])
                 return
 
-            result = ret
+            result = True
         finally:
             if result is None:
-                print(r'[ERROR] : %s.' % param)
+                print(r'[ERROR] : %s.' % params[r'url'])
+                time.sleep(1)
             return result
 
     data = None
@@ -108,31 +186,67 @@ def __mapper_downloader(param):
 
 #######################################################################
 
-def capman(url, path, referer):
-    params = dict()
-    for p in t_webtool.reducer([{
-        r'url': url,
-        r'path': path,
-        r'referer': referer,
-    } for url in __pagelist(url)], __mapper_collecter):
-        params.update(p)
+def mapper_product(params):
+    def work():
+        result = None
+        try:
+            result = query_product_page(params[r'url'], params[r'dst'])
+        finally:
+            if result is None:
+                print(r'[ERROR] : %s.' % params[r'url'])
+                time.sleep(1)
+            return result
 
-    t_webtool.reducer(params.values(), __mapper_downloader)
+    data = None
+    while data is None:
+        data = work()
+    return data
+
+#######################################################################
+
+def get(base, dst):
+    productplist = list()
+    pcount = t.exps(t.exp(base % r'1').xpath(r'//*[@class = "last"]/text()')).replace(r'.', r'')
+    for i in range(1, int(pcount) + 1):
+        params = dict()
+        params[r'dst'] = dst
+        params[r'url'] = base % i
+        productplist.append(params)
+
+    threadinfos = dict()
+    for data in t.reducer(productplist, mapper_product):
+        threadinfos.update(data)
+
+    pginfos = dict()
+    for data in t.reducer(threadinfos.values(), mapper_pg):
+        pginfos.update(data)
+
+    imginfos = dict()
+    for data in t.reducer(pginfos.values(), mapper_img):
+        imginfos.update(data)
+
+    t.reducer(imginfos.values(), mapper_get)
     return True
 
 #######################################################################
 
-def loader_main():
-    cfg = t_webtool.IniDict()
-    proot = os.path.dirname(__file__)
-    cfg.read(os.path.join(proot, r'configer_mei.ini'))
-    proot = os.path.join(proot, cfg[r'CONFIG'][r'path'])
+def productlist():
+    result = list()
 
-    for maker, ma in cfg.resection(r'^MEITULU_(\w+)$').items():
-        url = cfg[maker][r'url']
-        path = os.path.join(proot, cfg[maker][r'title'])
-        referer = t_webtool.http_urljoin(url, r'/img.html?img=%s')
-        capman(url, path, referer)
+    k = r'头条女神 Goddes'
+    v = r'https://www.lsm.me/forum-109-%s.html'
+    result.append((k, v))
+
+    return result
+
+def loader_main():
+    for k, v in productlist():
+        print(r'[PRODUCT] : %s' % k)
+        dst = r'D:/TOSHIBA/[套图]蕾丝猫/%s' % k
+        get(v, dst)
+        fail = t.rmempty(dst)
+        if fail:
+            print(r'[Bad] : %s' % fail)
 
 #######################################################################
 
