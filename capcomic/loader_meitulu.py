@@ -33,6 +33,9 @@ def query_pg_images(url):
 
 #######################################################################
 
+def fixsubject(text):
+    return text.replace('\\', r'-').replace('/', r'-')
+
 def query_product_page(url, dst):
     result = None
     try:
@@ -43,7 +46,7 @@ def query_product_page(url, dst):
             thread = dict()
             thread[r'cover'] = t.exps(group.xpath(r'.//*[@class = "photo"]//img/@src'))
             thread[r'url'] = threadurl
-            thread[r'subject'] = t.expt(link)
+            thread[r'subject'] = fixsubject(t.expt(link))
             thread[r'dst'] = dst
             for v in thread.values():
                 if not v:
@@ -243,9 +246,13 @@ def productlist():
     v = r'https://www.lsm.me/forum-109-%s.html'
     result.append((k, v))
 
-    # k = r'魅妍社 MiStar'
-    # v = r'https://www.lsm.me/forum-80-%s.html'
-    # result.append((k, v))
+    k = r'魅妍社 MiStar'
+    v = r'https://www.lsm.me/forum-80-%s.html'
+    result.append((k, v))
+
+    k = r'秀人网 XiuRen'
+    v = r'https://www.lsm.me/forum-40-%s.html'
+    result.append((k, v))
 
     return result
 
