@@ -164,9 +164,15 @@ def mapper_get(params):
                     nonlocal ig
                     ig = True
 
-            if not t.http_download(params[r'url'], params[r'dst'],
+            ilen = t.http_download(params[r'url'], params[r'dst'],
                                    None,
-                                   onerr):
+                                   onerr)
+            if ilen == 0:
+                result = True
+                print(r'[IMGNULL] : %s.' % params[r'url'])
+                return
+
+            if not ilen:
                 if ig:
                     result = True
                     print(r'[IGNORE] : %s.' % params[r'url'])
@@ -236,6 +242,10 @@ def productlist():
     k = r'头条女神 Goddes'
     v = r'https://www.lsm.me/forum-109-%s.html'
     result.append((k, v))
+
+    # k = r'魅妍社 MiStar'
+    # v = r'https://www.lsm.me/forum-80-%s.html'
+    # result.append((k, v))
 
     return result
 
