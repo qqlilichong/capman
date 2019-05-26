@@ -23,7 +23,7 @@ def subject(title):
 #######################################################################
 
 def website():
-    return r'https://www.aisinei.org/'
+    return r'https://www.aisinei.net/'
 
 #######################################################################
 
@@ -174,159 +174,159 @@ def productlist():
     result = list()
 
     k = r'TuiGirl推女郎'
-    v = r'https://www.aisinei.org/forum-tuigirl-%s.html'
+    v = r'/forum-tuigirl-%s.html'
     result.append((k, v))
 
     k = r'UGirls尤果网'
-    v = r'https://www.aisinei.org/forum-ugirls-%s.html'
+    v = r'/forum-ugirls-%s.html'
     result.append((k, v))
 
     k = r'UGirls尤果圈'
-    v = r'https://www.aisinei.org/forum-youguoquan-%s.html'
+    v = r'/forum-youguoquan-%s.html'
     result.append((k, v))
 
     k = r'ROSI'
-    v = r'https://www.aisinei.org/forum-rosi-%s.html'
+    v = r'/forum-rosi-%s.html'
     result.append((k, v))
 
     k = r'BeautyLeg'
-    v = r'https://www.aisinei.org/forum-beautyleg-%s.html'
+    v = r'/forum-beautyleg-%s.html'
     result.append((k, v))
 
     k = r'Goddes头条女神'
-    v = r'https://www.aisinei.org/forum-goddes-%s.html'
+    v = r'/forum-goddes-%s.html'
     result.append((k, v))
 
     k = r'DDY_Pantyhose'
-    v = r'https://www.aisinei.org/forum-ddypantyhoseart-%s.html'
+    v = r'/forum-ddypantyhoseart-%s.html'
     result.append((k, v))
 
     k = r'颜女神'
-    v = r'https://www.aisinei.org/forum-yannvshen-%s.html'
+    v = r'/forum-yannvshen-%s.html'
     result.append((k, v))
 
     k = r'DISI第四印象'
-    v = r'https://www.aisinei.org/forum-disi-%s.html'
+    v = r'/forum-disi-%s.html'
     result.append((k, v))
 
     k = r'3AGirl'
-    v = r'https://www.aisinei.org/forum-3agirl-%s.html'
+    v = r'/forum-3agirl-%s.html'
     result.append((k, v))
 
     k = r'108TV酱'
-    v = r'https://www.aisinei.org/forum-108tv-%s.html'
+    v = r'/forum-108tv-%s.html'
     result.append((k, v))
 
     k = r'QingDouKe青豆客'
-    v = r'https://www.aisinei.org/forum-qingdouke-%s.html'
+    v = r'/forum-qingdouke-%s.html'
     result.append((k, v))
 
     k = r'Kelagirls克拉女神'
-    v = r'https://www.aisinei.org/forum-kelagirls-%s.html'
+    v = r'/forum-kelagirls-%s.html'
     result.append((k, v))
 
     k = r'GIRLT果团网'
-    v = r'https://www.aisinei.org/forum-girlt-%s.html'
+    v = r'/forum-girlt-%s.html'
     result.append((k, v))
 
     k = r'TGOD推女神'
-    v = r'https://www.aisinei.org/forum-tgod-%s.html'
+    v = r'/forum-tgod-%s.html'
     result.append((k, v))
 
     k = r'SLADY猎女神'
-    v = r'https://www.aisinei.org/forum-slady-%s.html'
+    v = r'/forum-slady-%s.html'
     result.append((k, v))
 
     k = r'XIUREN秀人网'
-    v = r'https://www.aisinei.org/forum-xiuren-%s.html'
+    v = r'/forum-xiuren-%s.html'
     result.append((k, v))
 
     k = r'MyGirl美媛馆'
-    v = r'https://www.aisinei.org/forum-mygirl-%s.html'
+    v = r'/forum-mygirl-%s.html'
     result.append((k, v))
 
     k = r'BoLoli波萝社'
-    v = r'https://www.aisinei.org/forum-bololi-%s.html'
+    v = r'/forum-bololi-%s.html'
     result.append((k, v))
 
     k = r'MiStar魅妍社'
-    v = r'https://www.aisinei.org/forum-mistar-%s.html'
+    v = r'/forum-mistar-%s.html'
     result.append((k, v))
 
     k = r'MFStar模范学院'
-    v = r'https://www.aisinei.org/forum-mfstar-%s.html'
+    v = r'/forum-mfstar-%s.html'
     result.append((k, v))
 
     k = r'UXING优星馆'
-    v = r'https://www.aisinei.org/forum-uxing-%s.html'
+    v = r'/forum-uxing-%s.html'
     result.append((k, v))
 
     k = r'IMISS爱蜜社'
-    v = r'https://www.aisinei.org/forum-imiss-%s.html'
+    v = r'/forum-imiss-%s.html'
     result.append((k, v))
 
     k = r'FEILIN嗲囡囡'
-    v = r'https://www.aisinei.org/forum-feilin-%s.html'
+    v = r'/forum-feilin-%s.html'
     result.append((k, v))
 
     k = r'TASTE顽味生活'
-    v = r'https://www.aisinei.org/forum-taste-%s.html'
+    v = r'/forum-taste-%s.html'
     result.append((k, v))
 
     k = r'MiiTao蜜桃社'
-    v = r'https://www.aisinei.org/forum-miitao-%s.html'
+    v = r'/forum-miitao-%s.html'
     result.append((k, v))
 
     k = r'YouWu尤物馆'
-    v = r'https://www.aisinei.org/forum-youwu-%s.html'
+    v = r'/forum-youwu-%s.html'
     result.append((k, v))
 
     k = r'WingS影私荟'
-    v = r'https://www.aisinei.org/forum-wings-%s.html'
+    v = r'/forum-wings-%s.html'
     result.append((k, v))
 
     k = r'LeYuan星乐园'
-    v = r'https://www.aisinei.org/forum-leyuan-%s.html'
+    v = r'/forum-leyuan-%s.html'
     result.append((k, v))
 
     k = r'HuaYan花の颜'
-    v = r'https://www.aisinei.org/forum-huayan-%s.html'
+    v = r'/forum-huayan-%s.html'
     result.append((k, v))
 
     k = r'MintYe薄荷叶'
-    v = r'https://www.aisinei.org/forum-mintye-%s.html'
+    v = r'/forum-mintye-%s.html'
     result.append((k, v))
 
     k = r'DKGirl御女郎'
-    v = r'https://www.aisinei.org/forum-dkgirl-%s.html'
+    v = r'/forum-dkgirl-%s.html'
     result.append((k, v))
 
     k = r'CANDY糖果画报'
-    v = r'https://www.aisinei.org/forum-candy-%s.html'
+    v = r'/forum-candy-%s.html'
     result.append((k, v))
 
     k = r'YOUMI尤蜜荟'
-    v = r'https://www.aisinei.org/forum-youmi-%s.html'
+    v = r'/forum-youmi-%s.html'
     result.append((k, v))
 
     k = r'MTMENG模特联盟'
-    v = r'https://www.aisinei.org/forum-mtmeng-%s.html'
+    v = r'/forum-mtmeng-%s.html'
     result.append((k, v))
 
     k = r'MICAT猫萌榜'
-    v = r'https://www.aisinei.org/forum-micat-%s.html'
+    v = r'/forum-micat-%s.html'
     result.append((k, v))
 
     k = r'HuaYang花漾'
-    v = r'https://www.aisinei.org/forum-huayang-%s.html'
+    v = r'/forum-huayang-%s.html'
     result.append((k, v))
 
     k = r'XINGYAN星颜社'
-    v = r'https://www.aisinei.org/forum-xingyan-%s.html'
+    v = r'/forum-xingyan-%s.html'
     result.append((k, v))
 
     k = r'XIAOYU语画界'
-    v = r'https://www.aisinei.org/forum-xiaoyu-%s.html'
+    v = r'/forum-xiaoyu-%s.html'
     result.append((k, v))
 
     return result
@@ -338,7 +338,7 @@ def loader_main():
         print(r'[PRODUCT] : %s' % k)
         params = dict()
         params[r'dst'] = r'D:/TOSHIBA/AISINEI/%s' % k
-        params[r'url'] = v
+        params[r'url'] = t.http_urljoin(website(), v)
         mapper_product(params)
         fail = t.rmempty(params[r'dst'])
         if fail:
