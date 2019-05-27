@@ -239,19 +239,22 @@ def get(base, dst):
 
 #######################################################################
 
+def website():
+    return r'https://www.lsm.me'
+
 def productlist():
     result = list()
 
     k = r'头条女神 Goddes'
-    v = r'https://www.lsm.me/forum-109-%s.html'
+    v = r'/forum-109-%s.html'
     result.append((k, v))
 
     k = r'魅妍社 MiStar'
-    v = r'https://www.lsm.me/forum-80-%s.html'
+    v = r'/forum-80-%s.html'
     result.append((k, v))
 
     k = r'秀人网 XiuRen'
-    v = r'https://www.lsm.me/forum-40-%s.html'
+    v = r'/forum-40-%s.html'
     result.append((k, v))
 
     return result
@@ -260,7 +263,7 @@ def loader_main():
     for k, v in productlist():
         print(r'[PRODUCT] : %s' % k)
         dst = r'D:/TOSHIBA/[套图]蕾丝猫/%s' % k
-        get(v, dst)
+        get(t.http_urljoin(website(), v), dst)
         fail = t.rmempty(dst)
         if fail:
             print(r'[Bad] : %s' % fail)
