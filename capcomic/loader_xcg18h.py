@@ -33,7 +33,7 @@ def mapper_chapter(params):
         return None
 
     cidx = t.zf(imageset[r'Data'][r'Index'])
-    dst = os.path.join(params[r'DST'], cidx)
+    dst = params[r'DST']
     t.fmkdir(dst)
 
     index = 0
@@ -65,12 +65,12 @@ def mapper_chapterset(params):
 #######################################################################
 
 def loader_main():
-    book = r''
-    title = r''
+    book = r'7B946A19C4EDFDCE27E606A98C98343C'
+    title = r'[中文][音乃夏] パコパコっ[177P]'
 
     return mapper_chapterset({
         r'BOOK': book,
-        r'DST': r'../../../XCG18H/%s/%s' % (book, title)
+        r'DST': r'../../../[漫画]小春光/%s[%s]' % (title.strip(), book.strip())
     })
 
 #######################################################################
