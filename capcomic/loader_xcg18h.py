@@ -65,8 +65,8 @@ def mapper_chapterset(params):
 #######################################################################
 
 def loader_main():
-    book = r'7B946A19C4EDFDCE27E606A98C98343C'
-    title = r'[中文][音乃夏] パコパコっ[177P]'
+    book = r''
+    title = r''
 
     return mapper_chapterset({
         r'BOOK': book,
