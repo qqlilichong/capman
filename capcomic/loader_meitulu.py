@@ -227,7 +227,7 @@ def get(base, dst):
         if href > rend:
             rend = href
 
-    for i in range(1, rend):
+    for i in range(1, rend + 1):
         params = dict()
         params[r'dst'] = dst
         params[r'url'] = base % i
