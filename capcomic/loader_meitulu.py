@@ -33,8 +33,13 @@ def query_pg_images(url):
 
 #######################################################################
 
+def subjectstrip(text):
+    if text.endswith(r'.'):
+        return subjectstrip(text[0:-1])
+    return text
+
 def fixsubject(text):
-    return text.replace('\\', r'-').replace('/', r'-')
+    return subjectstrip(text.replace('\\', r'-').replace('/', r'-'))
 
 def query_product_page(url, dst):
     result = None
@@ -88,7 +93,7 @@ def mapper_pg(params):
             result = pginfos
         finally:
             if result is None:
-                print(r'[ERROR] : %s.' % params[r'url'])
+                print(r'[mapper_pg][ERROR] : %s.' % params[r'url'])
                 time.sleep(1)
             return result
 
@@ -145,7 +150,7 @@ def mapper_img(params):
             result = imginfos
         finally:
             if result is None:
-                print(r'[ERROR] : %s.' % params[r'url'])
+                print(r'[mapper_img][ERROR] : %s.' % params[r'url'])
                 time.sleep(1)
             return result
 
@@ -172,19 +177,19 @@ def mapper_get(params):
                                    onerr)
             if ilen == 0:
                 result = True
-                print(r'[IMGNULL] : %s.' % params[r'url'])
+                print(r'[mapper_get][IMGNULL] : %s.' % params[r'url'])
                 return
 
             if not ilen:
                 if ig:
                     result = True
-                    print(r'[IGNORE] : %s.' % params[r'url'])
+                    print(r'[mapper_get][IGNORE] : %s.' % params[r'url'])
                 return
 
             result = True
         finally:
             if result is None:
-                print(r'[ERROR] : %s.' % params[r'url'])
+                print(r'[mapper_get][ERROR] : %s.' % params[r'url'])
                 time.sleep(1)
             return result
 
@@ -202,7 +207,7 @@ def mapper_product(params):
             result = query_product_page(params[r'url'], params[r'dst'])
         finally:
             if result is None:
-                print(r'[ERROR] : %s.' % params[r'url'])
+                print(r'[mapper_product][ERROR] : %s.' % params[r'url'])
                 time.sleep(1)
             return result
 
@@ -215,8 +220,8 @@ def mapper_product(params):
 
 def get(base, dst):
     productplist = list()
-    pcount = t.exps(t.exp(base % r'1').xpath(r'//*[@class = "last"]/text()')).replace(r'.', r'')
-    for i in range(1, int(pcount) + 1):
+    rend = len(t.exp(base % r'1').xpath(r'//*[@class = "pg"]//a[not(@class)]/@href')) + 2
+    for i in range(1, rend):
         params = dict()
         params[r'dst'] = dst
         params[r'url'] = base % i
@@ -245,16 +250,56 @@ def website():
 def productlist():
     result = list()
 
-    k = r'头条女神 Goddes'
-    v = r'/forum-109-%s.html'
+    k = r'轰趴猫 PartyCat'
+    v = r'/forum-132-%s.html'
+    result.append((k, v))
+
+    k = r'猎女神 SLY'
+    v = r'/forum-133-%s.html'
     result.append((k, v))
 
     k = r'魅妍社 MiStar'
     v = r'/forum-80-%s.html'
     result.append((k, v))
 
-    k = r'秀人网 XiuRen'
-    v = r'/forum-40-%s.html'
+    k = r'模范学院 MFStar'
+    v = r'/forum-82-%s.html'
+    result.append((k, v))
+
+    k = r'爱尤物 UGirls APP'
+    v = r'/forum-99-%s.html'
+    result.append((k, v))
+
+    k = r'尤物馆 YouWu'
+    v = r'/forum-106-%s.html'
+    result.append((k, v))
+
+    k = r'头条女神 Goddes'
+    v = r'/forum-109-%s.html'
+    result.append((k, v))
+
+    k = r'激萌文化 Kimoe'
+    v = r'/forum-112-%s.html'
+    result.append((k, v))
+
+    k = r'DK御女郎 DKGirl'
+    v = r'/forum-119-%s.html'
+    result.append((k, v))
+
+    k = r'尤蜜荟 YOUMI'
+    v = r'/forum-122-%s.html'
+    result.append((k, v))
+
+    k = r'模特联盟 MTMENG'
+    v = r'/forum-125-%s.html'
+    result.append((k, v))
+
+    k = r'星颜社 XINGYAN'
+    v = r'/forum-130-%s.html'
+    result.append((k, v))
+
+    k = r'美媛馆 MyGirl'
+    v = r'/forum-55-%s.html'
     result.append((k, v))
 
     return result

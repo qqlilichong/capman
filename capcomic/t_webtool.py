@@ -205,33 +205,43 @@ def http_get(url, headers=None, err=None):
 
 #######################################################################
 
-def http_download(url, filename, headers=None, err=None):
+def http_download(url, filename, headers=None, err=None, log=None):
     result = None
     try:
+        def plog(text):
+            if log:
+                print(r'[http_download][ERROR] : $%s$ - $%s$ - $%s$' % (text, url, filename))
+
         if url.startswith(r'data:'):
             result = fset(filename, base64.b64decode(url.split(r',')[1]))
             return
 
         resp = http_get(url, headers, err)
         if not resp:
+            plog(r'not resp')
             return
 
         len1 = int(resp.headers.get(r'content-length'))
         if not len1:
             result = 0
+            plog(r'not len1')
             return
 
         len2 = len(resp.content)
         if not len2:
+            plog(r'not len2')
             return
 
         if len1 != len2:
+            plog(r'len1 != len2')
             return
 
         if not fset(filename, resp.content):
+            plog(r'not fset(filename, resp.content)')
             return
 
         if fsize(filename) != len2:
+            plog(r'fsize(filename) != len2')
             return
 
         result = len2
