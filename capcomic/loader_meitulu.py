@@ -221,13 +221,13 @@ def mapper_product(params):
 def get(base, dst):
     productplist = list()
 
-    rend = 0
+    pcount = 1
     for href in t.exp(base % r'1').xpath(r'//*[@class = "pg"]//a/@href'):
         href = int(href.split(r'.')[0].split(r'-')[-1])
-        if href > rend:
-            rend = href
+        if href > pcount:
+            pcount = href
 
-    for i in range(1, rend + 1):
+    for i in range(1, pcount + 1):
         params = dict()
         params[r'dst'] = dst
         params[r'url'] = base % i
