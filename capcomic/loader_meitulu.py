@@ -308,6 +308,150 @@ def productlist():
     v = r'/forum-55-%s.html'
     result.append((k, v))
 
+    k = r'语画界 XIAOYU'
+    v = r'/forum-135-%s.html'
+    result.append((k, v))
+
+    k = r'雅拉伊 YALAYI'
+    v = r'/forum-136-%s.html'
+    result.append((k, v))
+
+    k = r'优星馆 UXING'
+    v = r'/forum-81-%s.html'
+    result.append((k, v))
+
+    k = r'嗲囡囡 FeiLin'
+    v = r'/forum-85-%s.html'
+    result.append((k, v))
+
+    k = r'顽味生活 Taste'
+    v = r'/forum-104-%s.html'
+    result.append((k, v))
+
+    k = r'影私荟 WingS'
+    v = r'/forum-107-%s.html'
+    result.append((k, v))
+
+    k = r'美腿宝贝 Legbaby'
+    v = r'/forum-110-%s.html'
+    result.append((k, v))
+
+    k = r'波萝社 BoLoli'
+    v = r'/forum-113-%s.html'
+    result.append((k, v))
+
+    k = r'薄荷叶 MintYe'
+    v = r'/forum-120-%s.html'
+    result.append((k, v))
+
+    k = r'克拉女神 KeLa'
+    v = r'/forum-124-%s.html'
+    result.append((k, v))
+
+    k = r'猫萌榜 MICAT'
+    v = r'/forum-126-%s.html'
+    result.append((k, v))
+
+    k = r'熊川纪信 XCJX'
+    v = r'/forum-131-%s.html'
+    result.append((k, v))
+
+    k = r'秀人网 XiuRen'
+    v = r'/forum-40-%s.html'
+    result.append((k, v))
+
+    k = r'尤美 YOUMEI'
+    v = r'/forum-134-%s.html'
+    result.append((k, v))
+
+    k = r'兔几盟 Tukmo'
+    v = r'/forum-79-%s.html'
+    result.append((k, v))
+
+    k = r'爱蜜社 IMiss'
+    v = r'/forum-83-%s.html'
+    result.append((k, v))
+
+    k = r'DDY Pantyhose'
+    v = r'/forum-89-%s.html'
+    result.append((k, v))
+
+    k = r'蜜桃社 MiiTao'
+    v = r'/forum-105-%s.html'
+    result.append((k, v))
+
+    k = r'星乐园 LeYuan'
+    v = r'/forum-108-%s.html'
+    result.append((k, v))
+
+    k = r'花の颜 HuaYan'
+    v = r'/forum-111-%s.html'
+    result.append((k, v))
+
+    k = r'村长的宝物 CUZ'
+    v = r'/forum-116-%s.html'
+    result.append((k, v))
+
+    k = r'糖果画报 CANDY'
+    v = r'/forum-121-%s.html'
+    result.append((k, v))
+
+    k = r'萌缚 MF'
+    v = r'/forum-123-%s.html'
+    result.append((k, v))
+
+    k = r'花漾show HuaYang'
+    v = r'/forum-128-%s.html'
+    result.append((k, v))
+
+    k = r'推女神 TGOD'
+    v = r'/forum-59-%s.html'
+    result.append((k, v))
+
+    k = r'爱丝 AISS'
+    v = r'/forum-54-%s.html'
+    result.append((k, v))
+
+    k = r'推女郎 TuiGirl'
+    v = r'/forum-39-%s.html'
+    result.append((k, v))
+
+    k = r'尤果网 UGirls'
+    v = r'/forum-UGirls-%s.html'
+    result.append((k, v))
+
+    k = r'中国腿模'
+    v = r'/forum-84-%s.html'
+    result.append((k, v))
+
+    k = r'51Modo'
+    v = r'/forum-87-%s.html'
+    result.append((k, v))
+
+    k = r'IShow'
+    v = r'/forum-86-%s.html'
+    result.append((k, v))
+
+    k = r'VGirl'
+    v = r'/forum-44-%s.html'
+    result.append((k, v))
+
+    k = r'Rosi'
+    v = r'/forum-37-%s.html'
+    result.append((k, v))
+
+    k = r'Ru1mm'
+    v = r'/forum-38-%s.html'
+    result.append((k, v))
+
+    k = r'Pans'
+    v = r'/forum-36-%s.html'
+    result.append((k, v))
+
+    k = r'Sityle'
+    v = r'/forum-43-%s.html'
+    result.append((k, v))
+
     return result
 
 def loader_main():
