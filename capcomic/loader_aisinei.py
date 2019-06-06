@@ -115,7 +115,8 @@ def mapper_productpage(params):
             details = dict()
             for div in divs:
                 link = div.a
-                dst = os.path.join(params[r'dst'], subject(link[r'title']))
+                title = r'%s[%s]' % (subject(link[r'title']), re.sub(r'\D', r'', link[r'href']))
+                dst = os.path.join(params[r'dst'], title)
 
                 # ignore exists detail.
                 if not os.path.exists(dst):
