@@ -1,6 +1,7 @@
 
 #######################################################################
 
+import re
 import os
 import time
 import t_webtool as t
@@ -51,7 +52,7 @@ def query_product_page(url, dst):
             thread = dict()
             thread[r'cover'] = t.exps(group.xpath(r'.//*[@class = "photo"]//img/@src'))
             thread[r'url'] = threadurl
-            thread[r'subject'] = fixsubject(t.expt(link))
+            thread[r'subject'] = r'%s[%s]' % (fixsubject(t.expt(link)), re.sub(r'\D', r'', threadurl))
             thread[r'dst'] = dst
             for v in thread.values():
                 if not v:
