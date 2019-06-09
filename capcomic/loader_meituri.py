@@ -190,7 +190,7 @@ def mapper_image(params):
             ig = False
 
             def onerr(resp):
-                if resp.status_code == 500:
+                if resp.status_code == 500 or resp.status_code == 404:
                     nonlocal ig
                     ig = True
 
@@ -211,7 +211,7 @@ def mapper_image(params):
             result = True
         finally:
             if result is None:
-                print(r'[mapper_image][ERROR] : %s.' % params[r'url'])
+                print(r'[mapper_image][ERROR] : %s.' % params)
                 time.sleep(1)
             return result
 
