@@ -30,7 +30,7 @@ def __subjectstrip(text):
     return text
 
 def __fixsubject(text):
-    return __subjectstrip(text.replace('\\', r'-').replace('/', r'-'))
+    return __subjectstrip(text.replace('\\', r'-').replace('/', r'-')).replace(r'?', r'')
 
 def query_threadinfotbl(threadobjtbl, url, dst):
     result = None
