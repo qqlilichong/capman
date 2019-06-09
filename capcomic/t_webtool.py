@@ -329,10 +329,15 @@ class IniDict:
 
 #######################################################################
 # etree
-def exp(url, dec=None):
-    html = http_get(url).content
+def exp(url, dec=None, err=None):
+    resp = http_get(url, err=err)
+    if not resp:
+        return None
+
+    html = resp.content
     if dec:
         html = html.decode(dec)
+
     return etree.HTML(html)
 
 def exps(obj):
