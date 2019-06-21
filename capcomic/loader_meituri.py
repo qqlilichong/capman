@@ -30,7 +30,15 @@ def __subjectstrip(text):
     return text
 
 def __fixsubject(text):
-    return __subjectstrip(text.replace('\\', r'-').replace('/', r'-')).replace(r'?', r'')
+    return __subjectstrip(text.replace('\\', r'-').replace('/', r'-')) \
+        .replace('\t', r'') \
+        .replace(r'?', r'') \
+        .replace(r'|', r'') \
+        .replace(r':', r'') \
+        .replace(r'*', r'') \
+        .replace(r'"', r'') \
+        .replace(r'<', r'') \
+        .replace(r'>', r'') \
 
 def query_threadinfotbl(threadobjtbl, url, dst):
     result = None
@@ -190,7 +198,7 @@ def mapper_image(params):
             ig = False
 
             def onerr(resp):
-                if resp.status_code == 500 or resp.status_code == 404:
+                if resp.status_code == 500 or resp.status_code == 404 or resp.status_code == 403:
                     nonlocal ig
                     ig = True
 
@@ -379,7 +387,7 @@ def productlist():
     v = r'/x/66/'
     result.append((k, v))
 
-    k = r'@misty'
+    k = r'Misty'
     v = r'/x/65/'
     result.append((k, v))
 
@@ -427,7 +435,7 @@ def productlist():
     v = r'/x/54/'
     result.append((k, v))
 
-    k = r'Image.tv'
+    k = r'ImageTV'
     v = r'/x/53/'
     result.append((k, v))
 
@@ -435,11 +443,11 @@ def productlist():
     v = r'/x/52/'
     result.append((k, v))
 
-    k = r'Hello! Project Digital Books'
+    k = r'Hello Project Digital Books'
     v = r'/x/51/'
     result.append((k, v))
 
-    k = r'Bomb.TV'
+    k = r'BombTV'
     v = r'/x/50/'
     result.append((k, v))
 
@@ -479,7 +487,7 @@ def productlist():
     v = r'/x/41/'
     result.append((k, v))
 
-    k = r'Imuto.tv'
+    k = r'ImutoTV'
     v = r'/x/40/'
     result.append((k, v))
 
@@ -499,7 +507,7 @@ def productlist():
     v = r'/x/36/'
     result.append((k, v))
 
-    k = r'Minisuka.tv'
+    k = r'MinisukaTV'
     v = r'/x/35/'
     result.append((k, v))
 
