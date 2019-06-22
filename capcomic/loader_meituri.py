@@ -307,6 +307,10 @@ def website():
 def productlist():
     result = list()
 
+    k = r'丝意SIEE'
+    v = r'/x/87/'
+    result.append((k, v))
+
     k = r'语画界'
     v = r'/x/85/'
     result.append((k, v))
