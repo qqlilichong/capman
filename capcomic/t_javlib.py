@@ -371,11 +371,25 @@ class JavLibTypeCache:
 
 #######################################################################
 
+def loadtd(kind, typecache):
+    typedict = typecache.load()
+
+    pitems = list()
+    for k, v in typedict.items():
+        if v == kind:
+            pitems.append(k)
+
+    for k in pitems:
+        typedict.pop(k)
+
+    typecache.save(typedict)
+    return typedict
+
 def start_collect(rootpath, dbinfo, kind, url):
     print(r'[LOG] start_collect : %s' % kind)
 
     typecache = JavLibTypeCache(os.path.join(rootpath, r'typecache.json'))
-    typedict = typecache.load()
+    typedict = loadtd(kind, typecache)
     if kind in typedict.values():
         print(r'[LOG] start_collect_ignore : %s' % kind)
         return
