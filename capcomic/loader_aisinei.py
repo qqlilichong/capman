@@ -338,7 +338,7 @@ def loader_main():
     for k, v in productlist():
         print(r'[PRODUCT] : %s' % k)
         params = dict()
-        params[r'dst'] = r'D:/TOSHIBA/[套图]爱丝内/%s' % k
+        params[r'dst'] = r'../../../[套图]爱丝内/%s' % k
         params[r'url'] = t.http_urljoin(website(), v)
         mapper_product(params)
         fail = t.rmempty(params[r'dst'])

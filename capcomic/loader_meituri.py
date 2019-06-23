@@ -656,7 +656,7 @@ def productlist():
 def loader_main():
     for k, v in productlist():
         print(r'[PRODUCT] : %s' % k)
-        dst = r'D:/TOSHIBA/[套图]美图日/%s' % k
+        dst = r'../../../[套图]美图日/%s' % k
         get(t.http_urljoin(website(), v), dst)
         fail = t.rmempty(dst)
         if fail:
