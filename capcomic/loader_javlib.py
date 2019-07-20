@@ -8,6 +8,10 @@ import t_javlib
 #######################################################################
 
 def loader_main():
+    cookie = t_webtool.fget(r't_cookie.txt')
+    if cookie:
+        os.environ[r't_cookie'] = cookie.decode(r'utf-8')
+
     dbinfo = t_webtool.mkd(db=r'javlib',
                            user=r'root',
                            passwd=r'admin')
@@ -16,11 +20,16 @@ def loader_main():
     proot = os.path.dirname(__file__)
     cfg.read(os.path.join(proot, r'configer_jmakers.ini'))
     proot = os.path.join(proot, cfg[r'CONFIG'][r'path'])
+    website = cfg[r'CONFIG'][r'site']
     for maker, ma in cfg.resection(r'^JMAKER_(\w+)$').items():
+        if not t_webtool.http_get(website):
+            print(r'website failed.')
+            break
+
         t_javlib.start_collect(proot,
                                dbinfo,
                                ma.group(1),
-                               t_webtool.http_urljoin(cfg[r'CONFIG'][r'site'], cfg[maker][r'url']))
+                               t_webtool.http_urljoin(website, cfg[maker][r'url']))
 
 #######################################################################
 

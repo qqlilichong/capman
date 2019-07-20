@@ -182,18 +182,28 @@ def fset(filename, content, fmode=r'wb'):
 def http_get(url, headers=None, err=None):
     result = None
     try:
+        timeout = 30
         def_headers = {
-            r'User-Agent':
-                'Mozilla/5.0 (Windows NT 6.1; WOW64) '
-                'AppleWebKit/537.36 (KHTML, like Gecko) '
-                'Chrome/53.0.2785.104 Safari/537.36 Core/1.53.4843.400 '
-                'QQBrowser/9.7.13021.400',
+            r'User-Agent': r'Mozilla/5.0 (Windows NT 6.1; WOW64) '
+                           r'AppleWebKit/537.36 (KHTML, like Gecko) '
+                           r'Chrome/70.0.3538.25 Safari/537.36 Core/1.70.3676.400 '
+                           'QQBrowser/10.4.3473.400',
         }
 
         if headers:
             def_headers.update(headers)
 
-        resp = requests.get(url, timeout=30, headers=def_headers)
+        if r't_cookie' in os.environ.keys():
+            cookies = {i.split(r'=')[0]: i.split(r'=')[-1] for i in os.environ[r't_cookie'].split(r'; ')}
+            resp = requests.get(url,
+                                timeout=timeout,
+                                headers=def_headers,
+                                cookies=cookies)
+        else:
+            resp = requests.get(url,
+                                timeout=timeout,
+                                headers=def_headers)
+
         if not resp.ok:
             if err:
                 err(resp)
