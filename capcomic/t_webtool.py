@@ -186,8 +186,7 @@ def http_get(url, headers=None, err=None):
         def_headers = {
             r'User-Agent': r'Mozilla/5.0 (Windows NT 6.1; WOW64) '
                            r'AppleWebKit/537.36 (KHTML, like Gecko) '
-                           r'Chrome/70.0.3538.25 Safari/537.36 Core/1.70.3676.400 '
-                           'QQBrowser/10.4.3473.400',
+                           r'Chrome/68.0.3440.84 Safari/537.36'
         }
 
         if headers:
