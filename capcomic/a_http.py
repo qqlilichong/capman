@@ -48,8 +48,7 @@ async def hget(ctx, *workflow):
 
                 ctx[r'ok'] = True
     except:
-        if r'except' in ctx:
-            await ctx[r'except'](ctx)
+        await ctx[r'except'](ctx)
     finally:
         return ctx
 
@@ -65,12 +64,12 @@ def __request_headers():
         r'User-Agent': r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.26 Safari/537.36 Core/1.63.5702.400 QQBrowser/10.2.1893.400'
     }
 
-async def hsession(task, sema=1000):
+async def hsession(task, headers=__request_headers(), sema=1000):
     async with aiohttp.ClientSession() as s:
         await task({
             r'status': 0,
             r'session': s,
-            r'headers': __request_headers(),
+            r'headers': headers,
             r'semaphore': asyncio.Semaphore(sema),
         })
 
