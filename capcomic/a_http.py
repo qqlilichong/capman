@@ -1,6 +1,7 @@
 
 #######################################################################################################
 
+import asyncio
 import aiohttp
 import a_file
 
@@ -34,17 +35,18 @@ async def wsavefile(ctx, _):
 
 async def hget(ctx, *workflow):
     try:
-        async with ctx[r'session'].get(ctx[r'url'], headers=ctx[r'headers']) as r:
-            ctx[r'status'] = r.status
-            if r.status != 200:
-                raise Exception()
+        async with ctx[r'semaphore']:
+            async with ctx[r'session'].get(ctx[r'url'], headers=ctx[r'headers']) as r:
+                ctx[r'status'] = r.status
+                if r.status != 200:
+                    raise Exception()
 
-            for work in workflow:
-                ctx[r'workstack'] = work.__name__
-                if not await work(ctx, r):
-                    break
+                for work in workflow:
+                    ctx[r'workstack'] = work.__name__
+                    if not await work(ctx, r):
+                        break
 
-            ctx[r'ok'] = True
+                ctx[r'ok'] = True
     except:
         if r'except' in ctx:
             await ctx[r'except'](ctx)
@@ -53,17 +55,23 @@ async def hget(ctx, *workflow):
 
 #######################################################################################################
 
+async def hsave(ctx):
+    return await hget(ctx, wgetcontent, wsavefile)
+
+#######################################################################################################
+
 def __request_headers():
     return {
         r'User-Agent': r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.26 Safari/537.36 Core/1.63.5702.400 QQBrowser/10.2.1893.400'
     }
 
-async def hsession(task):
+async def hsession(task, sema=1000):
     async with aiohttp.ClientSession() as s:
         await task({
             r'status': 0,
             r'session': s,
             r'headers': __request_headers(),
+            r'semaphore': asyncio.Semaphore(sema),
         })
 
 #######################################################################################################
