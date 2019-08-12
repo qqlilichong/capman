@@ -7,6 +7,10 @@ import a_file
 
 #######################################################################################################
 
+async def wgettext(ctx, r):
+    ctx[r'text'] = await r.text()
+    return True
+
 async def wgetcontent(ctx, r):
     for h in [r'Content-Length', r'Content-Type']:
         if h in r.headers:
@@ -14,8 +18,6 @@ async def wgetcontent(ctx, r):
 
     ctx[r'content'] = await r.read()
     return True
-
-#######################################################################################################
 
 async def wsavefile(ctx, _):
     clen = int(ctx[r'Content-Length'])
@@ -52,10 +54,14 @@ async def hget(ctx, *workflow):
     finally:
         return ctx
 
-#######################################################################################################
-
 async def hsave(ctx):
     return await hget(ctx, wgetcontent, wsavefile)
+
+async def htext(ctx):
+    return await hget(ctx, wgettext)
+
+async def hcontent(ctx):
+    return await hget(ctx, wgetcontent)
 
 #######################################################################################################
 
