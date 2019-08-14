@@ -9,6 +9,9 @@ import a_http
 async def exceptbus(_):
     print(r'Except...')
 
+async def xpathbus(_):
+    return True
+
 async def mainbus(context):
     context[r'except'] = exceptbus
 
@@ -18,7 +21,8 @@ async def mainbus(context):
     c1[r'file'] = r'y:/abc1.png'
 
     c2 = dict()
-    c2[r'url'] = r'https://www.jd.com'
+    c2[r'url'] = r'https://gaoqing.fm/'
+    c2[r'xpath'] = xpathbus
     c2.update(context)
 
     for result in await a_tool.tmr(a_http.hcontent(c2)):

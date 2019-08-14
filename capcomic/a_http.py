@@ -4,8 +4,22 @@
 import asyncio
 import aiohttp
 import a_file
+import t_xpath
 
 #######################################################################################################
+
+async def wxpath(ctx, _):
+    if r'xpath' not in ctx:
+        return True
+
+    if r'text' in ctx:
+        ctx[r'xp'] = t_xpath.xhtml(ctx[r'text'])
+    elif r'content' in ctx:
+        ctx[r'xp'] = t_xpath.xhtml(ctx[r'content'])
+    else:
+        raise Exception()
+
+    return await ctx[r'xpath'](ctx)
 
 async def wgettext(ctx, r):
     ctx[r'text'] = await r.text()
@@ -58,10 +72,10 @@ async def hsave(ctx):
     return await hget(ctx, wgetcontent, wsavefile)
 
 async def htext(ctx):
-    return await hget(ctx, wgettext)
+    return await hget(ctx, wgettext, wxpath)
 
 async def hcontent(ctx):
-    return await hget(ctx, wgetcontent)
+    return await hget(ctx, wgetcontent, wxpath)
 
 #######################################################################################################
 
