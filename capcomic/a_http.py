@@ -54,7 +54,7 @@ async def hget(ctx, *workflow):
         async with ctx[r'semaphore']:
             async with ctx[r'session'].get(ctx[r'url'], headers=ctx[r'headers']) as r:
                 ctx[r'status'] = r.status
-                if r.status != 200:
+                if ctx[r'status'] != ctx[r'okcode']:
                     raise Exception()
 
                 for work in workflow:
@@ -88,6 +88,7 @@ async def hsession(task, headers=__request_headers(), sema=1000):
     async with aiohttp.ClientSession() as s:
         await task({
             r'status': 0,
+            r'okcode': 200,
             r'session': s,
             r'headers': headers,
             r'semaphore': asyncio.Semaphore(sema),
