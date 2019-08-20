@@ -2,7 +2,6 @@
 #######################################################################################################
 
 import sys
-import json
 import uuid
 import hashlib
 import asyncio
@@ -20,24 +19,6 @@ async def tuuid():
     result = None
     try:
         result = hashlib.sha1(str(uuid.uuid1()).encode()).hexdigest()
-    finally:
-        return result
-
-#######################################################################################################
-
-async def tjdumps(**kwargs):
-    result = None
-    try:
-        result = json.dumps(kwargs, ensure_ascii=False, indent=True)
-    finally:
-        return result
-
-#######################################################################################################
-
-async def tjloads(text, enc=None):
-    result = None
-    try:
-        result = json.loads(text, encoding=enc)
     finally:
         return result
 
