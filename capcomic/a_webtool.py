@@ -14,7 +14,6 @@ async def xpathbus(_):
     return True
 
 async def mainbus(context):
-    ccc = await a_file.fget(r'y:/aaa.txt')
     context[r'except'] = exceptbus
 
     c1 = dict()

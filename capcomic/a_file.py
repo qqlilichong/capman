@@ -2,6 +2,7 @@
 #######################################################################################################
 
 import os
+import re
 import shutil
 import aiofiles
 
@@ -93,6 +94,21 @@ async def frmempty(path):
             for p in pl:
                 os.rmdir(p)
                 result.append(p)
+    finally:
+        return result
+
+#######################################################################################################
+
+async def fmatch(file, mode):
+    result = None
+    try:
+        ma = re.compile(mode)
+        fl = list()
+        for filename in os.listdir(file):
+            if ma.match(filename):
+                fl.append(os.path.join(file, filename))
+
+        result = fl
     finally:
         return result
 

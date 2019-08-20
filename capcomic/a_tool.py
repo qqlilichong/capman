@@ -2,7 +2,61 @@
 #######################################################################################################
 
 import sys
+import json
+import uuid
+import hashlib
 import asyncio
+from urllib.parse import urljoin
+
+#######################################################################################################
+
+async def tzf(data, width=3, inc=1):
+    data = int(data) + inc
+    return str(data).zfill(width)
+
+#######################################################################################################
+
+async def tuuid():
+    result = None
+    try:
+        result = hashlib.sha1(str(uuid.uuid1()).encode()).hexdigest()
+    finally:
+        return result
+
+#######################################################################################################
+
+async def tjdumps(**kwargs):
+    result = None
+    try:
+        result = json.dumps(kwargs, ensure_ascii=False, indent=True)
+    finally:
+        return result
+
+#######################################################################################################
+
+async def tjloads(text, enc=None):
+    result = None
+    try:
+        result = json.loads(text, encoding=enc)
+    finally:
+        return result
+
+#######################################################################################################
+
+async def tjoinurl(url, path):
+    result = None
+    try:
+        result = urljoin(url, path)
+    finally:
+        return result
+
+#######################################################################################################
+
+async def tmr(*tasks):
+    taskqueue = list()
+    for task in tasks:
+        taskqueue.append(asyncio.create_task(task))
+    return await asyncio.gather(*taskqueue)
 
 #######################################################################################################
 
@@ -14,13 +68,5 @@ def tloop(task):
     loop.run_until_complete(task)
     loop.run_until_complete(asyncio.sleep(1))
     loop.close()
-
-#######################################################################################################
-
-async def tmr(*tasks):
-    taskqueue = list()
-    for task in tasks:
-        taskqueue.append(asyncio.create_task(task))
-    return await asyncio.gather(*taskqueue)
 
 #######################################################################################################
