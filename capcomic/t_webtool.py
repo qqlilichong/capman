@@ -45,11 +45,10 @@ def reducer_mt(dlist, handler, maxps=32):
         if ps > maxps:
             ps = maxps
 
-        ios = ThreadPoolExecutor(ps)
-        plist = [ios.submit(handler, d) for d in dlist]
-        wait(plist, return_when=ALL_COMPLETED)
-
-        result = [p.result() for p in plist]
+        with ThreadPoolExecutor(max_workers=ps) as ios:
+            plist = [ios.submit(handler, d) for d in dlist]
+            wait(plist, return_when=ALL_COMPLETED)
+            result = [p.result() for p in plist]
     finally:
         return result
 
@@ -68,7 +67,6 @@ def reducer_mp(dlist, handler, maxps=32):
         plist = [ios.apply_async(handler, (d,)) for d in dlist]
         ios.close()
         ios.join()
-
         result = [p.get() for p in plist]
     finally:
         return result
