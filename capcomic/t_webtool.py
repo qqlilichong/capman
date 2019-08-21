@@ -15,6 +15,7 @@ import cfscrape
 import requests
 from urllib.parse import urljoin
 from lxml import etree
+from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 
 #######################################################################
 
@@ -33,7 +34,26 @@ def mkid():
 
 #######################################################################
 
-def reducer(dlist, handler, maxps=32):
+def reducer_mt(dlist, handler, maxps=32):
+    result = None
+    try:
+        ps = len(dlist)
+        if not ps:
+            result = []
+            return
+
+        if ps > maxps:
+            ps = maxps
+
+        ios = ThreadPoolExecutor(ps)
+        plist = [ios.submit(handler, d) for d in dlist]
+        wait(plist, return_when=ALL_COMPLETED)
+
+        result = [p.result() for p in plist]
+    finally:
+        return result
+
+def reducer_mp(dlist, handler, maxps=32):
     result = None
     try:
         ps = len(dlist)
@@ -52,6 +72,8 @@ def reducer(dlist, handler, maxps=32):
         result = [p.get() for p in plist]
     finally:
         return result
+
+reducer = reducer_mt
 
 #######################################################################
 
@@ -189,8 +211,8 @@ class CFSession:
 
     @staticmethod
     def reset(url):
-        CFSession.__gs = cfscrape.create_scraper()
-        CFSession.__gs.get(url)
+        CFSession.__cf = cfscrape.create_scraper()
+        return CFSession.__cf.get(url)
 
 #######################################################################
 

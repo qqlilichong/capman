@@ -4,20 +4,16 @@
 import os
 import t_webtool
 import t_javlib
-import t_jscaper
 
 #######################################################################
 
 def update_cookie(website):
-    bs = t_jscaper.newbs(False, False, True)
+    os.environ[r't_cloudflare'] = r'true'
 
     def work():
         result = None
         try:
-            if t_jscaper.getbss(bs, website, r'div#toplogo'):
-                cookiedict = {c[r'name']: c[r'value'] for c in bs.get_cookies()}
-                cookies = [r'%s=%s' % (k, v) for k, v in cookiedict.items()]
-                os.environ[r't_cookie'] = r'; '.join(cookies)
+            if t_webtool.CFSession().reset(website).status_code == 200:
                 result = True
         finally:
             return result
@@ -25,9 +21,6 @@ def update_cookie(website):
     data = None
     while data is None:
         data = work()
-
-    bs.close()
-    bs.quit()
     return data
 
 #######################################################################
