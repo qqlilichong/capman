@@ -11,6 +11,7 @@ import multiprocessing
 import configparser
 
 import bs4
+import cfscrape
 import requests
 from urllib.parse import urljoin
 from lxml import etree
@@ -179,6 +180,20 @@ def fset(filename, content, fmode=r'wb'):
 
 #######################################################################
 
+class CFSession:
+    __cf = None
+
+    @staticmethod
+    def session():
+        return CFSession.__cf
+
+    @staticmethod
+    def reset(url):
+        CFSession.__gs = cfscrape.create_scraper()
+        CFSession.__gs.get(url)
+
+#######################################################################
+
 def http_get(url, headers=None, err=None):
     result = None
     try:
@@ -198,6 +213,8 @@ def http_get(url, headers=None, err=None):
                                 timeout=timeout,
                                 headers=def_headers,
                                 cookies=cookies)
+        elif r't_cloudflare' in os.environ.keys():
+            resp = CFSession.session().get(url)
         else:
             resp = requests.get(url,
                                 timeout=timeout,
