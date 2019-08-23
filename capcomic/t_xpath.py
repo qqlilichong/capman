@@ -30,18 +30,17 @@ def xselect(xp, path, i=0):
 
 #######################################################################################################
 
-def xattr(xp, attr):
+def xnode(xp, node):
     result = None
     try:
-        result = xp.xpath(r'.//@%s' % attr)[0]
+        result = xp.xpath(r'.//%s' % node)[0]
     finally:
         return result
 
+def xattr(xp, attr):
+    return xnode(xp, r'@%s' % attr)
+
 def xtext(xp):
-    result = None
-    try:
-        result = xp.xpath(r'.//text()')[0]
-    finally:
-        return result
+    return xnode(xp, r'text()')
 
 #######################################################################################################
