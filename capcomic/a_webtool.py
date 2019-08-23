@@ -6,25 +6,16 @@ import a_http
 
 #######################################################################################################
 
-async def exceptbus(_):
-    print(r'Except...')
+class MaperXP:
+    async def busbus(self, ctx):
+        print(self, ctx)
+        return True
 
-async def xpathbus(_):
-    return True
+#######################################################################################################
 
 async def mainbus(context):
-    context[r'except'] = exceptbus
-
-    c1 = dict()
-    c1.update(context)
-    c1[r'url'] = r'https://image.suning.cn/public/v3/images/new-down-img.png?v=st0001'
-    c1[r'file'] = r'y:/abc1.png'
-
-    c2 = dict()
-    c2[r'url'] = r'https://gaoqing.fm/'
-    c2[r'xpath'] = xpathbus
-    c2.update(context)
-
+    obj = MaperXP()
+    c2 = a_http.hctx(context, url=r'https://www.163.com/', xpath=obj.busbus)
     for result in await a_tool.tmr(a_http.hcontent(c2)):
         print(result[r'url'])
 

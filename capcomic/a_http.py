@@ -79,6 +79,20 @@ async def hcontent(ctx):
 
 #######################################################################################################
 
+def hctx(context, **kwargs):
+    ctx = dict()
+    ctx.update(context)
+    ctx.update(kwargs)
+    return ctx
+
+#######################################################################################################
+
+async def __logbus(ctx, info, level=5):
+    print(r'%s[%s]: %s' % (ctx[r'module'], level, info))
+
+async def __exceptbus(ctx):
+    await ctx[r'log'](ctx, ctx[r'workstack'])
+
 def __request_headers():
     return {
         r'User-Agent': r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.26 Safari/537.36 Core/1.63.5702.400 QQBrowser/10.2.1893.400'
@@ -87,11 +101,15 @@ def __request_headers():
 async def hsession(task, headers=__request_headers(), sema=1000):
     async with aiohttp.ClientSession() as s:
         await task({
+            r'module': r'a_http',
+            r'session': s,
+            r'semaphore': asyncio.Semaphore(sema),
+            r'headers': headers,
             r'status': 0,
             r'okcode': 200,
-            r'session': s,
-            r'headers': headers,
-            r'semaphore': asyncio.Semaphore(sema),
+            r'workstack': r'hsession',
+            r'log': __logbus,
+            r'except': __exceptbus,
         })
 
 #######################################################################################################
