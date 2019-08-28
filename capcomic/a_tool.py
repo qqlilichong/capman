@@ -5,6 +5,7 @@ import sys
 import uuid
 import hashlib
 import asyncio
+import inspect
 from urllib.parse import urljoin
 
 #######################################################################################################
@@ -49,5 +50,13 @@ def tloop(task):
     loop.run_until_complete(task)
     loop.run_until_complete(asyncio.sleep(1))
     loop.close()
+
+#######################################################################################################
+
+def metatbl(tbl):
+    return {
+        r'%s.%s' % (tbl[r'__name__'], k): v for k, v in tbl.items()
+        if not k.startswith(r'_') and (inspect.isfunction(v) or inspect.isclass(v))
+    }
 
 #######################################################################################################

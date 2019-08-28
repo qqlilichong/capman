@@ -3,8 +3,13 @@
 
 import asyncio
 import aiohttp
-import a_file
 import t_xpath
+import a_tool
+import a_file
+import a_httpmr
+
+def meta():
+    return a_tool.metatbl(globals())
 
 #######################################################################################################
 
@@ -85,10 +90,13 @@ def hctx(context, **kwargs):
     ctx.update(kwargs)
     return ctx
 
+def hfarmer(cfg):
+    return cfg[r'param.context'][r'meta'][cfg[r'meta.id']](cfg).task()
+
 #######################################################################################################
 
 async def __logbus(ctx, info, level=5):
-    print(r'%s[%s]: %s' % (ctx[r'module'], level, info))
+    print(r'{%s}[%s]: %s' % (ctx[r'url'], level, info))
 
 async def __exceptbus(ctx):
     await ctx[r'log'](ctx, ctx[r'workstack'])
@@ -98,15 +106,22 @@ def __request_headers():
         r'User-Agent': r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.26 Safari/537.36 Core/1.63.5702.400 QQBrowser/10.2.1893.400'
     }
 
+def __meta():
+    tbl = dict()
+    tbl.update(meta())
+    tbl.update(a_httpmr.meta())
+    return tbl
+
 async def hsession(task, headers=__request_headers(), sema=1000):
     async with aiohttp.ClientSession() as s:
         await task({
-            r'module': r'a_http',
+            r'meta': __meta(),
             r'session': s,
             r'semaphore': asyncio.Semaphore(sema),
             r'headers': headers,
             r'status': 0,
             r'okcode': 200,
+            r'ok': False,
             r'workstack': r'hsession',
             r'log': __logbus,
             r'except': __exceptbus,
