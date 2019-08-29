@@ -1,6 +1,7 @@
 
 #######################################################################################################
 
+import os
 import asyncio
 import aiohttp
 import t_xpath
@@ -14,17 +15,13 @@ def meta():
 #######################################################################################################
 
 async def wxpath(ctx, _):
-    if r'xpath' not in ctx:
-        return True
-
     if r'text' in ctx:
         ctx[r'xp'] = t_xpath.xhtml(ctx[r'text'])
     elif r'content' in ctx:
         ctx[r'xp'] = t_xpath.xhtml(ctx[r'content'])
     else:
         raise Exception()
-
-    return await ctx[r'xpath'](ctx)
+    return True
 
 async def wgettext(ctx, r):
     ctx[r'text'] = await r.text()
@@ -41,6 +38,9 @@ async def wgetcontent(ctx, r):
 async def wsavefile(ctx, _):
     clen = int(ctx[r'Content-Length'])
     if not clen:
+        raise Exception()
+
+    if not await a_file.fmkd(os.path.dirname(ctx[r'file'])):
         raise Exception()
 
     flen = await a_file.fset(ctx[r'file'], ctx[r'content'])
@@ -73,14 +73,14 @@ async def hget(ctx, *workflow):
     finally:
         return ctx
 
-async def hsave(ctx):
-    return await hget(ctx, wgetcontent, wsavefile)
+async def hsave(ctx, *workflow):
+    return await hget(ctx, wgetcontent, wsavefile, *workflow)
 
-async def htext(ctx):
-    return await hget(ctx, wgettext, wxpath)
+async def htext(ctx, *workflow):
+    return await hget(ctx, wgettext, wxpath, *workflow)
 
-async def hcontent(ctx):
-    return await hget(ctx, wgetcontent, wxpath)
+async def hcontent(ctx, *workflow):
+    return await hget(ctx, wgetcontent, wxpath, *workflow)
 
 #######################################################################################################
 
@@ -122,7 +122,7 @@ async def hsession(task, headers=__request_headers(), sema=1000):
             r'status': 0,
             r'okcode': 200,
             r'ok': False,
-            r'workstack': r'hsession',
+            r'workstack': r'main',
             r'log': __logbus,
             r'except': __exceptbus,
         })

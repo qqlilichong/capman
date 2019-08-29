@@ -7,17 +7,25 @@ import a_http
 #######################################################################################################
 
 async def mainbus(context):
-    cfg = {
-        r'meta.id': r'a_httpmr.RXP',
+    c1 = {
+        r'meta.id': r'a_httpmr.FarmerXP',
         r'param.context': context,
-        r'param.url': r'https://gaoqing.fm/',
-        r'param.select': r'//ul[@class="item-list nav"]/li',
+        r'param.url': r'https://www.1905.com/vod/',
+        r'param.select': r'//section[@id="rthk"]//a[@class="pic-pack-outer"]',
         r'pin.id': r'img/@src',
-        r'pin.text': r'div[@class="item-desc pull-left"]/p/a/text()',
+        r'pin.text': r'h3/text()',
     }
 
-    for result in await a_tool.tmr(a_http.hfarmer(cfg)):
-        print(result[r'url'])
+    c2 = {
+        r'meta.id': r'a_httpmr.FarmerFile',
+        r'param.context': context,
+        r'param.file': r'g:/sf|<param.name>|<param.name>.jpg',
+        r'param.name': r'hehe',
+        r'param.url': r'https://www.runoob.com/wp-content/uploads/2015/01/cpp-mini-logo.png',
+    }
+
+    for result in await a_tool.tmr(a_http.hfarmer(c1), a_http.hfarmer(c2)):
+        print(result[r'farmer'].pin)
 
 #######################################################################################################
 
