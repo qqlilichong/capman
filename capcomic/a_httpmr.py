@@ -78,9 +78,10 @@ class FarmerFile(FarmerBase):
 #######################################################################################################
 
 class BeanStock:
-    def __init__(self, beans, context):
-        self.context = context
+    def __init__(self, beans, metas, context):
         self.beans = beans
+        self.metas = metas
+        self.context = context
 
     def starts(self):
         return [self.newtask(self.newbean(beanid)) for beanid, bean in self.beans.items() if r'meta.main' in bean.keys()]
@@ -92,7 +93,7 @@ class BeanStock:
         return bean
 
     def newtask(self, bean):
-        return self.context[r'meta'][bean[r'meta.class']](bean).task()
+        return self.metas[bean[r'meta.class']](bean).task()
 
     def transform(self, farmer):
         if r'meta.link' not in farmer.bean.keys():
@@ -121,9 +122,9 @@ class BeanStock:
 
 #######################################################################################################
 
-def farming(beans):
+def farming(beans, metas):
     async def mainbus(context):
-        bs = BeanStock(beans, context)
+        bs = BeanStock(beans, metas, context)
         tasks = bs.starts()
         while tasks:
             tasks = await bs.farming(tasks)

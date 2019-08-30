@@ -2,6 +2,7 @@
 #######################################################################################################
 
 import t_ptree
+import a_http
 import a_httpmr
 
 #######################################################################################################
@@ -9,7 +10,11 @@ import a_httpmr
 def mainbus(cfgfile):
     ini = t_ptree.PTini()
     ini.read(cfgfile)
-    a_httpmr.farming({beanid: ini[beanid].copy() for beanid in ini.smatch(r'(bean.\w+)').keys()})
+    beans = {beanid: ini[beanid].copy() for beanid in ini.smatch(r'(bean.\w+)').keys()}
+    metas = dict()
+    metas.update(a_http.meta())
+    metas.update(a_httpmr.meta())
+    a_httpmr.farming(beans, metas)
 
 #######################################################################################################
 
