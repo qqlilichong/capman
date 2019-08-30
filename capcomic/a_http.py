@@ -31,30 +31,27 @@ async def wgetcontent(ctx, r):
     for h in [r'Content-Length', r'Content-Type']:
         if h in r.headers:
             ctx[h] = r.headers[h]
-
     ctx[r'content'] = await r.read()
     return True
 
 async def wsavefile(ctx, _):
-    clen = int(ctx[r'Content-Length'])
+    clen = len(ctx[r'content'])
+    if r'Content-Length' in ctx.keys():
+        clen = int(ctx[r'Content-Length'])
     if not clen:
         raise Exception()
-
     if not await a_file.fmkd(os.path.dirname(ctx[r'file'])):
         raise Exception()
-
     flen = await a_file.fset(ctx[r'file'], ctx[r'content'])
     if not flen:
         raise Exception()
-
     if clen != flen:
         raise Exception()
-
     return True
 
 #######################################################################################################
 
-async def hget(ctx, *workflow):
+async def __hget(ctx, *workflow):
     try:
         async with ctx[r'semaphore']:
             async with ctx[r'session'].get(ctx[r'url'], headers=ctx[r'headers']) as r:
@@ -73,6 +70,15 @@ async def hget(ctx, *workflow):
     finally:
         return ctx
 
+async def hget(ctx, *workflow):
+    while True:
+        await __hget(ctx, *workflow)
+        if ctx[r'ok']:
+            break
+        if not ctx[r'retry']:
+            break
+    return ctx
+
 async def hsave(ctx, *workflow):
     return await hget(ctx, wgetcontent, wsavefile, *workflow)
 
@@ -84,19 +90,8 @@ async def hcontent(ctx, *workflow):
 
 #######################################################################################################
 
-def hctx(context, **kwargs):
-    ctx = dict()
-    ctx.update(context)
-    ctx.update(kwargs)
-    return ctx
-
-def hfarmer(cfg):
-    return cfg[r'param.context'][r'meta'][cfg[r'meta.id']](cfg).task()
-
-#######################################################################################################
-
 async def __logbus(ctx, info, level=5):
-    print(r'{%s}[%s]: %s' % (ctx[r'url'], level, info))
+    print(r'[%s]{%s}: %s' % (level, ctx[r'url'], info))
 
 async def __exceptbus(ctx):
     await ctx[r'log'](ctx, ctx[r'workstack'])
@@ -122,6 +117,7 @@ async def hsession(task, headers=__request_headers(), sema=1000):
             r'status': 0,
             r'okcode': 200,
             r'ok': False,
+            r'retry': False,
             r'workstack': r'main',
             r'log': __logbus,
             r'except': __exceptbus,
