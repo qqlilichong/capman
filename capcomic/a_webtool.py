@@ -14,7 +14,7 @@ def mainbus(cfgfile):
     metas = dict()
     metas.update(a_http.meta())
     metas.update(a_httpmr.meta())
-    a_httpmr.farming(beans, metas)
+    a_httpmr.farm(beans, metas)
 
 #######################################################################################################
 
