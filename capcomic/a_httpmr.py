@@ -52,10 +52,12 @@ class FarmerBase:
 class FarmerXP(FarmerBase):
     def task(self):
         self.debug = r'%s@%s' % (self.bean[r'param.beanid'], self.bean[r'param.select'])
-        return a_http.htext(self.newctx(url=self.bean[r'param.url']),
-                            self.__work)
+        return a_http.htext(self.newctx(url=self.bean[r'param.url']), *self.tasklist())
 
-    async def __work(self, ctx, _):
+    def tasklist(self):
+        return [self.__xp_work]
+
+    async def __xp_work(self, ctx, _):
         ctx[r'workstack'] = self.debug
         self.pin = dict()
         result = dict()
@@ -69,11 +71,33 @@ class FarmerXP(FarmerBase):
 
 #######################################################################################################
 
+class FarmerNavi(FarmerXP):
+    def tasklist(self):
+        return super().tasklist() + [self.__navi_work]
+
+    async def __navi_work(self, ctx, _):
+        result = dict()
+
+        for nd in self.pin.values():
+            nd[r'pin.id'] = a_tool.urljoin(ctx[r'url'], nd[r'pin.id'])
+            result[nd[r'pin.id']] = nd
+
+        result[ctx[r'url']] = {
+            r'pin.id': ctx[r'url']
+        }
+
+        self.pin = result
+        return True
+
+#######################################################################################################
+
 class FarmerFile(FarmerBase):
     def task(self):
         self.debug = r'%s@%s' % (self.bean[r'param.beanid'], self.bean[r'param.name'])
-        return a_http.hsave(self.newctx(url=self.bean[r'param.url'], file=self.__filename()),
-                            self.__work)
+        return a_http.hsave(self.newctx(url=self.bean[r'param.url'], file=self.__filename()), *self.tasklist())
+
+    def tasklist(self):
+        return [self.__file_work]
 
     def __filename(self):
         filename = r''
@@ -83,7 +107,7 @@ class FarmerFile(FarmerBase):
             filename = os.path.join(filename, d)
         return filename
 
-    async def __work(self, ctx, _):
+    async def __file_work(self, ctx, _):
         ctx[r'workstack'] = self.debug
         self.pin = dict()
         self.pin = {
