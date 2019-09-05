@@ -49,7 +49,6 @@ def tloop(task):
     loop = asyncio.get_event_loop()
     loop.run_until_complete(task)
     loop.run_until_complete(asyncio.sleep(1))
-    loop.close()
 
 #######################################################################################################
 

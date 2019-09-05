@@ -43,9 +43,21 @@ class FarmerBase:
         ctx[r'except'] = self.exceptbus
         return ctx
 
+    def reparam(self, paramlist):
+        result = list()
+        for p in paramlist:
+            for k in re.findall(r'<(.*?)>', p):
+                p = p.replace(r'<%s>' % k, self.bean[k])
+            result.append(p)
+        return result
+
     async def exceptbus(self, ctx):
         await ctx[r'log'](ctx, self.debug)
         ctx[r'retry'] = True
+
+    @staticmethod
+    async def logbus(ctx, log):
+        await ctx[r'log'](ctx, log, 1)
 
 #######################################################################################################
 
@@ -57,15 +69,26 @@ class FarmerXP(FarmerBase):
     def tasklist(self):
         return [self.__xp_work]
 
+    def __param_joinurl(self):
+        joinlist = [r'pin.id']
+        if r'param.joinurl' in self.bean.keys():
+            joinlist = [k for k in self.bean[r'param.joinurl'].split(r'&')]
+        return joinlist
+
     async def __xp_work(self, ctx, _):
         ctx[r'workstack'] = self.debug
+
+        joinlist = self.__param_joinurl()
         self.pin = dict()
         result = dict()
-        vl = [k for k in self.bean.keys() if k.find(r'pin.') != -1]
+        pinlist = [k for k in self.bean.keys() if k.find(r'pin.') != -1]
         for node in t_xpath.xselects(ctx[r'xp'], self.bean[r'param.select']):
-            nd = {v: t_xpath.xnode(node, self.bean[v]) for v in vl}
-            if nd:
-                result[nd[r'pin.id']] = nd
+            nd = {pin: t_xpath.xnode(node, self.bean[pin]) for pin in pinlist}
+            if not nd:
+                continue
+            for k in joinlist:
+                nd[k] = a_tool.urljoin(ctx[r'url'], nd[k])
+            result[nd[r'pin.id']] = nd
         self.pin = result
         return True
 
@@ -75,18 +98,24 @@ class FarmerNavi(FarmerXP):
     def tasklist(self):
         return super().tasklist() + [self.__navi_work]
 
+    def __param_navi(self):
+        if r'param.navi' not in self.bean.keys():
+            return
+
+        bact = t_beans.BeanAct(self.bean[r'param.navi'])
+        idx = 0
+        if bact.param:
+            idx = int(bact.param[0])
+
+        for k, v in bact.view.items():
+            for pin in self.pin.values():
+                pin[v] = re.findall(bact.act, pin[k])[idx]
+
     async def __navi_work(self, ctx, _):
-        result = dict()
-
-        for nd in self.pin.values():
-            nd[r'pin.id'] = a_tool.urljoin(ctx[r'url'], nd[r'pin.id'])
-            result[nd[r'pin.id']] = nd
-
-        result[ctx[r'url']] = {
+        self.pin[ctx[r'url']] = {
             r'pin.id': ctx[r'url']
         }
-
-        self.pin = result
+        self.__param_navi()
         return True
 
 #######################################################################################################
@@ -101,10 +130,8 @@ class FarmerFile(FarmerBase):
 
     def __filename(self):
         filename = r''
-        for d in self.bean[r'param.file'].split(r'|'):
-            for t in re.findall(r'<(.*?)>', d):
-                d = d.replace(r'<%s>' % t, self.bean[t])
-            filename = os.path.join(filename, d)
+        for p in self.reparam(self.bean[r'param.file'].split(r'|')):
+            filename = os.path.join(filename, p)
         return filename
 
     async def __file_work(self, ctx, _):

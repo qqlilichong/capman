@@ -1,6 +1,24 @@
 
 #######################################################################################################
 
+class BeanAct:
+    def __init__(self, act):
+        self.act = r''
+        self.param = list()
+        self.view = dict()
+        self.__update(act)
+
+    def __update(self, act):
+        beanmain = act.split(r'/')
+        beanfunc = beanmain[0].split(r':')
+        self.act = beanfunc[0]
+        self.param = beanfunc[1:]
+        for v in beanmain[1].split(r'|'):
+            v = v.split(r'->')
+            self.view[v[0]] = v[1]
+
+#######################################################################################################
+
 class Beans:
     def __init__(self, beans, metas, context):
         self.beans = beans
@@ -23,19 +41,20 @@ class Beans:
         if r'meta.link' not in farmer.bean.keys():
             return list()
 
-        beanparse = farmer.bean[r'meta.link'].split(r'?')
-        beanmap = dict()
-        for pv in beanparse[1].split(r'&'):
-            pv = pv.split(r'=')
-            beanmap[pv[0]] = pv[1]
+        bact = BeanAct(farmer.bean[r'meta.link'])
+        nbs = list()
+        for pin in farmer.pin.values():
+            nb = self.newbean(bact.act)
+            for k, v in bact.view.items():
+                nb[v] = pin[k]
+            nbs.append(nb)
 
-        tasks = list()
-        for fv in farmer.pin.values():
-            nb = self.newbean(beanparse[0])
-            for k, v in beanmap.items():
-                nb[v] = fv[k]
-            tasks.append(self.newtask(nb))
+        for k, v in farmer.bean.items():
+            if not k.startswith(r'cookie.'):
+                continue
+            for nb in nbs:
+                nb[k] = v
 
-        return tasks
+        return [self.newtask(nb) for nb in nbs]
 
 #######################################################################################################
