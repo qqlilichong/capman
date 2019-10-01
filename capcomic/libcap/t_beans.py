@@ -26,7 +26,7 @@ class Beans:
         self.context = context
 
     def starts(self):
-        return [self.newtask(self.newbean(beanid)) for beanid, bean in self.beans.items() if r'meta.main' in bean.keys()]
+        return [self.newtask(self.newbean(k)) for k, v in self.beans.items() if r'meta.main' in v.keys()]
 
     def newbean(self, beanid):
         bean = self.beans[beanid].copy()

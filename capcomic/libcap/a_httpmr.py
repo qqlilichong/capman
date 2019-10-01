@@ -3,10 +3,7 @@
 
 import os
 import re
-import a_tool
-import a_http
-import t_xpath
-import t_beans
+from libcap import a_tool, a_http, t_xpath, t_beans
 
 def meta():
     return a_tool.metatbl(globals())
