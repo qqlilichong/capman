@@ -1,7 +1,6 @@
 
 #######################################################################################################
 
-import os
 import re
 from libcap import a_tool, a_http, t_xpath, t_beans
 
@@ -32,6 +31,7 @@ class FarmerBase:
         self.bean = bean
         self.pin = dict()
         self.debug = r''
+        self.reparam()
 
     def newctx(self, **kwargs):
         ctx = self.bean[r'param.context'].copy()
@@ -40,13 +40,42 @@ class FarmerBase:
         ctx[r'except'] = self.exceptbus
         return ctx
 
-    def reparam(self, paramlist):
+    def reparamval(self, key):
+        paramlist = self.bean[key].split(r'|')
         result = list()
         for p in paramlist:
             for k in re.findall(r'<(.*?)>', p):
                 p = p.replace(r'<%s>' % k, self.bean[k])
             result.append(p)
-        return result
+        return r''.join(result)
+
+    def reparam(self):
+        kid = r'reparam.'
+        result = dict()
+        for key in self.bean.keys():
+            if key.startswith(kid):
+                result[key.replace(kid, r'')] = self.reparamval(key)
+        self.bean.update(result)
+
+    def repinvalre(self, bact):
+        reidx = 0
+        if r'reidx' in bact.param:
+            reidx = int(bact.param[r'reidx'])
+
+        for k, v in bact.view.items():
+            for pin in self.pin.values():
+                pin[v] = re.findall(bact.act, pin[k])[reidx]
+
+    def repinval(self, key):
+        bact = t_beans.BeanAct(self.bean[key])
+        if bact.isprore():
+            self.repinvalre(bact)
+
+    def repin(self):
+        kid = r'repin.'
+        for key in self.bean.keys():
+            if key.startswith(kid):
+                self.repinval(key)
 
     async def exceptbus(self, ctx):
         await ctx[r'log'](ctx, self.debug)
@@ -87,32 +116,7 @@ class FarmerXP(FarmerBase):
                 nd[k] = a_tool.urljoin(ctx[r'url'], nd[k])
             result[nd[r'pin.id']] = nd
         self.pin = result
-        return True
-
-#######################################################################################################
-
-class FarmerNavi(FarmerXP):
-    def tasklist(self):
-        return super().tasklist() + [self.__navi_work]
-
-    def __param_navi(self):
-        if r'param.navi' not in self.bean.keys():
-            return
-
-        bact = t_beans.BeanAct(self.bean[r'param.navi'])
-        idx = 0
-        if bact.param:
-            idx = int(bact.param[0])
-
-        for k, v in bact.view.items():
-            for pin in self.pin.values():
-                pin[v] = re.findall(bact.act, pin[k])[idx]
-
-    async def __navi_work(self, ctx, _):
-        self.pin[ctx[r'url']] = {
-            r'pin.id': ctx[r'url']
-        }
-        self.__param_navi()
+        self.repin()
         return True
 
 #######################################################################################################
@@ -120,16 +124,10 @@ class FarmerNavi(FarmerXP):
 class FarmerFile(FarmerBase):
     def task(self):
         self.debug = r'%s@%s' % (self.bean[r'param.beanid'], self.bean[r'param.name'])
-        return a_http.hsave(self.newctx(url=self.bean[r'param.url'], file=self.__filename()), *self.tasklist())
+        return a_http.hsave(self.newctx(url=self.bean[r'param.url'], file=self.bean[r'param.file']), *self.tasklist())
 
     def tasklist(self):
         return [self.__file_work]
-
-    def __filename(self):
-        filename = r''
-        for p in self.reparam(self.bean[r'param.file'].split(r'|')):
-            filename = os.path.join(filename, p)
-        return filename
 
     async def __file_work(self, ctx, _):
         ctx[r'workstack'] = self.debug

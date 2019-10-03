@@ -4,18 +4,38 @@
 class BeanAct:
     def __init__(self, act):
         self.act = r''
+        self.pro = r''
         self.param = list()
         self.view = dict()
         self.__update(act)
 
-    def __update(self, act):
-        beanmain = act.split(r'/')
-        beanfunc = beanmain[0].split(r':')
-        self.act = beanfunc[0]
-        self.param = beanfunc[1:]
-        for v in beanmain[1].split(r'|'):
+    @staticmethod
+    def __sp(obj):
+        result = dict()
+        for v in obj.split(r'|'):
             v = v.split(r'->')
-            self.view[v[0]] = v[1]
+            result[v[0]] = v[1]
+        return result
+
+    def __update(self, act):
+        beanmain = act.split(r'/?/')
+        beanfunc = beanmain[0].split(r'/:/')
+        if len(beanfunc) > 1:
+            self.param = self.__sp(beanfunc[1])
+        self.view = self.__sp(beanmain[1])
+        self.__protocol(beanfunc[0])
+
+    def __protocol(self, act):
+        acts = act.split(r'/@/')
+        if len(acts) == 2:
+            self.pro = acts[0]
+            self.act = acts[1]
+
+    def isprobl(self):
+        return self.pro == r'bl'
+
+    def isprore(self):
+        return self.pro == r're'
 
 #######################################################################################################
 
@@ -42,6 +62,9 @@ class Beans:
             return list()
 
         bact = BeanAct(farmer.bean[r'meta.link'])
+        if not bact.isprobl():
+            raise Exception()
+
         nbs = list()
         for pin in farmer.pin.values():
             nb = self.newbean(bact.act)
