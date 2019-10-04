@@ -38,7 +38,14 @@ class FarmerBase:
         ctx.update(kwargs)
         ctx[r'farmer'] = self
         ctx[r'except'] = self.exceptbus
+        self.reheaders(ctx[r'headers'])
         return ctx
+
+    def reheaders(self, headers):
+        kid = r'param.headers.'
+        for key, val in self.bean.items():
+            if key.startswith(kid):
+                headers[key.replace(kid, r'')] = val
 
     def reparamval(self, key):
         paramlist = self.bean[key].split(r'|')
