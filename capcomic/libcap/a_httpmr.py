@@ -120,7 +120,7 @@ class FarmerXP(FarmerBase):
             if not nd:
                 continue
             for k in joinlist:
-                nd[k] = a_tool.urljoin(ctx[r'url'], nd[k])
+                nd[k] = a_tool.tjoinurl(ctx[r'url'], nd[k])
             result[nd[r'pin.id']] = nd
         self.pin = result
         self.repin()
@@ -130,7 +130,7 @@ class FarmerXP(FarmerBase):
 
 class FarmerFile(FarmerBase):
     def task(self):
-        self.debug = r'%s@%s' % (self.bean[r'param.beanid'], self.bean[r'param.name'])
+        self.debug = r'%s@%s' % (self.bean[r'param.beanid'], self.bean[r'param.file'])
         return a_http.hsave(self.newctx(url=self.bean[r'param.url'], file=self.bean[r'param.file']), *self.tasklist())
 
     def tasklist(self):

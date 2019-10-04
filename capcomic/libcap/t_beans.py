@@ -1,6 +1,10 @@
 
 #######################################################################################################
 
+from libcap import a_tool
+
+#######################################################################################################
+
 class BeanAct:
     def __init__(self, act):
         self.act = r''
@@ -70,6 +74,7 @@ class Beans:
             nb = self.newbean(bact.act)
             for k, v in bact.view.items():
                 nb[v] = pin[k]
+            nb[r'meta.index'] = a_tool.tzf(len(nbs))
             nbs.append(nb)
 
         for k, v in farmer.bean.items():

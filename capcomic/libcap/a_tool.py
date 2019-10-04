@@ -10,13 +10,13 @@ from urllib.parse import urljoin
 
 #######################################################################################################
 
-async def tzf(data, width=3, inc=1):
+def tzf(data, width=3, inc=1):
     data = int(data) + inc
     return str(data).zfill(width)
 
 #######################################################################################################
 
-async def tuuid():
+def tuuid():
     result = None
     try:
         result = hashlib.sha1(str(uuid.uuid1()).encode()).hexdigest()
@@ -25,7 +25,7 @@ async def tuuid():
 
 #######################################################################################################
 
-async def tjoinurl(url, path):
+def tjoinurl(url, path):
     result = None
     try:
         result = urljoin(url, path)
