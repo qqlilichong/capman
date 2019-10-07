@@ -51,7 +51,9 @@ async def wsavefile(ctx, _):
 async def __hget(ctx, *workflow):
     try:
         async with ctx[r'semaphore']:
-            async with ctx[r'session'].get(ctx[r'url'], headers=ctx[r'headers']) as r:
+            async with ctx[r'session'].get(ctx[r'url'],
+                                           headers=ctx[r'headers'],
+                                           timeout=ctx[r'timeout']) as r:
                 ctx[r'status'] = r.status
                 if ctx[r'status'] != ctx[r'okcode']:
                     raise Exception()
@@ -101,14 +103,17 @@ def __request_headers():
         r'User-Agent': ua
     }
 
-async def hsession(task, headers=None, sema=1000):
+async def hsession(task, headers=None, timeout=None, sema=200):
     if not headers:
         headers = __request_headers()
+    if not timeout:
+        timeout = aiohttp.ClientTimeout(total=20)
     async with aiohttp.ClientSession() as s:
         await task({
             r'session': s,
             r'semaphore': asyncio.Semaphore(sema),
             r'headers': headers,
+            r'timeout': timeout,
             r'status': 0,
             r'okcode': 200,
             r'ok': False,

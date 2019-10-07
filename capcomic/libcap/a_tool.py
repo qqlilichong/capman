@@ -59,3 +59,22 @@ def metatbl(tbl):
     }
 
 #######################################################################################################
+
+def fixpath(path):
+    path = path.replace('\\', '/')
+    path = path.replace(r'..', r'')
+    path = path.replace(r'./', r'/')
+    psp = path.split(r':/')
+    if len(psp) == 2:
+        pl = list()
+        for s in psp[1].split(r'/'):
+            for i in (r':', r'*', r'?', r'"', r'<', r'>', r'|'):
+                s = s.replace(i, r'')
+            pl.append(s)
+        path = r'%s:/%s' % (psp[0], r'/'.join(pl))
+    path = path.strip()
+    path = path.strip(r'.')
+    path = path.strip()
+    return path
+
+#######################################################################################################

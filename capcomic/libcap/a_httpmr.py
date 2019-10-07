@@ -84,6 +84,15 @@ class FarmerBase:
             if key.startswith(kid):
                 self.repinval(key)
 
+    def extpin(self):
+        kid = r'extp.'
+        result = dict()
+        for key in self.bean.keys():
+            if key.startswith(kid):
+                pid = self.reparamval(key)
+                result[pid] = {r'pin.id': pid}
+        self.pin.update(result)
+
     async def exceptbus(self, ctx):
         await ctx[r'log'](ctx, self.debug)
         ctx[r'retry'] = True
@@ -122,7 +131,9 @@ class FarmerXP(FarmerBase):
             for k in joinlist:
                 nd[k] = a_tool.tjoinurl(ctx[r'url'], nd[k])
             result[nd[r'pin.id']] = nd
-        self.pin = result
+
+        self.extpin()
+        self.pin.update(result)
         self.repin()
         return True
 
@@ -130,11 +141,17 @@ class FarmerXP(FarmerBase):
 
 class FarmerFile(FarmerBase):
     def task(self):
-        self.debug = r'%s@%s' % (self.bean[r'param.beanid'], self.bean[r'param.file'])
-        return a_http.hsave(self.newctx(url=self.bean[r'param.url'], file=self.bean[r'param.file']), *self.tasklist())
+        file = a_tool.fixpath(self.bean[r'param.file'])
+        self.debug = r'%s@%s' % (self.bean[r'param.beanid'], file)
+        return a_http.hsave(self.newctx(url=self.bean[r'param.url'], file=file), *self.tasklist())
 
     def tasklist(self):
         return [self.__file_work]
+
+    def __igs(self):
+        if r'param.igs' not in self.bean.keys():
+            return list()
+        return [int(i) for i in self.bean[r'param.igs'].split(r'|')]
 
     async def __file_work(self, ctx, _):
         ctx[r'workstack'] = self.debug
@@ -145,5 +162,12 @@ class FarmerFile(FarmerBase):
             }
         }
         return True
+
+    async def exceptbus(self, ctx):
+        if ctx[r'status'] in self.__igs():
+            ctx[r'retry'] = False
+        else:
+            await ctx[r'log'](ctx, self.debug)
+            ctx[r'retry'] = True
 
 #######################################################################################################
