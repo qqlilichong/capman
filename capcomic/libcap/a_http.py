@@ -87,6 +87,9 @@ async def htext(ctx, *workflow):
 async def hcontent(ctx, *workflow):
     return await hget(ctx, wgetcontent, wxpath, *workflow)
 
+async def hnull(ctx):
+    return ctx
+
 #######################################################################################################
 
 async def __logbus(ctx, info, level=5):

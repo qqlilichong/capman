@@ -62,10 +62,15 @@ class Beans:
         return self.metas[bean[r'meta.class']](bean).task()
 
     def transform(self, farmer):
-        if r'meta.link' not in farmer.bean.keys():
-            return list()
+        result = list()
+        flag = r'meta.link'
+        for key in farmer.bean.keys():
+            if key.startswith(flag):
+                result += self.mlink(farmer, key)
+        return result
 
-        bact = BeanAct(farmer.bean[r'meta.link'])
+    def mlink(self, farmer, key):
+        bact = BeanAct(farmer.bean[key])
         if not bact.isprobl():
             raise Exception()
 

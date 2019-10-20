@@ -2,7 +2,7 @@
 #######################################################################################################
 
 import re
-from libcap import a_tool, a_http, t_xpath, t_beans
+from libcap import a_tool, a_http, a_file, t_xpath, t_beans
 
 def meta():
     return a_tool.metatbl(globals())
@@ -93,6 +93,13 @@ class FarmerBase:
                 result[pid] = {r'pin.id': pid}
         self.pin.update(result)
 
+    def skip(self, ctx):
+        if r'param.skip' not in self.bean.keys():
+            return
+        if not a_file.fexists(a_tool.fixpath(self.bean[r'param.skip'])):
+            return None
+        return a_http.hnull(ctx)
+
     async def exceptbus(self, ctx):
         await ctx[r'log'](ctx, self.debug)
         ctx[r'retry'] = True
@@ -105,8 +112,12 @@ class FarmerBase:
 
 class FarmerXP(FarmerBase):
     def task(self):
+        ctx = self.newctx(url=self.bean[r'param.url'])
         self.debug = r'%s@%s' % (self.bean[r'param.beanid'], self.bean[r'param.select'])
-        return a_http.htext(self.newctx(url=self.bean[r'param.url']), *self.tasklist())
+        tpass = self.skip(ctx)
+        if tpass:
+            return tpass
+        return a_http.htext(ctx, *self.tasklist())
 
     def tasklist(self):
         return [self.__xp_work]
@@ -142,8 +153,12 @@ class FarmerXP(FarmerBase):
 class FarmerFile(FarmerBase):
     def task(self):
         file = a_tool.fixpath(self.bean[r'param.file'])
-        self.debug = r'%s@%s' % (self.bean[r'param.beanid'], file)
-        return a_http.hsave(self.newctx(url=self.bean[r'param.url'], file=file), *self.tasklist())
+        ctx = self.newctx(url=self.bean[r'param.url'], file=file)
+        self.debug = r'[get]%s@%s' % (self.bean[r'param.beanid'], file)
+        tpass = self.skip(ctx)
+        if tpass:
+            return tpass
+        return a_http.hsave(ctx, *self.tasklist())
 
     def tasklist(self):
         return [self.__file_work]
@@ -167,7 +182,6 @@ class FarmerFile(FarmerBase):
         if ctx[r'status'] in self.__igs():
             ctx[r'retry'] = False
         else:
-            await ctx[r'log'](ctx, self.debug)
-            ctx[r'retry'] = True
+            await super().exceptbus(ctx)
 
 #######################################################################################################

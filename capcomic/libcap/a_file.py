@@ -57,7 +57,7 @@ async def fsize(file):
 
 #######################################################################################################
 
-async def fexists(file):
+def fexists(file):
     result = None
     try:
         result = os.path.exists(file)
@@ -69,7 +69,7 @@ async def fexists(file):
 async def frm(file):
     result = None
     try:
-        if not await fexists(file):
+        if not fexists(file):
             return
 
         if os.path.isdir(file):
