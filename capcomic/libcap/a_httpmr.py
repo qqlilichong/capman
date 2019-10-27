@@ -47,8 +47,8 @@ class FarmerBase:
             if key.startswith(kid):
                 headers[key.replace(kid, r'')] = val
 
-    def reparamval(self, key):
-        paramlist = self.bean[key].split(r'|')
+    def reparamval(self, data):
+        paramlist = data.split(r'|')
         result = list()
         for p in paramlist:
             for k in re.findall(r'<(.*?)>', p):
@@ -61,14 +61,11 @@ class FarmerBase:
         result = dict()
         for key in self.bean.keys():
             if key.startswith(kid):
-                result[key.replace(kid, r'')] = self.reparamval(key)
+                result[key.replace(kid, r'')] = self.reparamval(self.bean[key])
         self.bean.update(result)
 
     def repinvalre(self, bact):
-        reidx = 0
-        if r'reidx' in bact.param:
-            reidx = int(bact.param[r'reidx'])
-
+        reidx = int(bact.getparam(r'reidx', 0))
         for k, v in bact.view.items():
             for pin in self.pin.values():
                 pin[v] = re.findall(bact.act, pin[k])[reidx]
@@ -84,13 +81,52 @@ class FarmerBase:
             if key.startswith(kid):
                 self.repinval(key)
 
-    def extpin(self):
-        kid = r'extp.'
+    def extpin(self, tag):
+        def user_reparamval():
+            for k, v in bact.view.items():
+                val = self.reparamval(k)
+                result[val] = {v: val}
+
+        def user_lastfill():
+            lastitem = None
+            for i in self.pin.values():
+                lastitem = i
+            if not lastitem:
+                return
+
+            pid = None
+            redata = None
+            review = None
+            lastnum = 0
+            reidx = int(bact.getparam(r'reidx', 0))
+            uid = bact.getparam(r'uid', r'pin.id')
+            for k, v in bact.view.items():
+                pid = lastitem[uid]
+                lastnum = int(re.findall(k, pid)[reidx])
+                review = v
+                redata = v % lastnum
+            if not lastnum:
+                return
+
+            for i in range(1, lastnum):
+                val = pid.replace(redata, review % i)
+                result[val] = {uid: val}
+
+        extpmap = {
+            r'reparamval': user_reparamval,
+            r'lastfill': user_lastfill,
+        }
+
+        kid = r'extp.%s' % tag
         result = dict()
         for key in self.bean.keys():
-            if key.startswith(kid):
-                pid = self.reparamval(key)
-                result[pid] = {r'pin.id': pid}
+            if not key.startswith(kid):
+                continue
+            bact = t_beans.BeanAct(self.bean[key])
+            if not bact.isprouser():
+                continue
+            if bact.act in extpmap.keys():
+                extpmap[bact.act]()
         self.pin.update(result)
 
     def skip(self, ctx):
@@ -143,8 +179,9 @@ class FarmerXP(FarmerBase):
                 nd[k] = a_tool.tjoinurl(ctx[r'url'], nd[k])
             result[nd[r'pin.id']] = nd
 
-        self.extpin()
+        self.extpin(r'addhead')
         self.pin.update(result)
+        self.extpin(r'addtail')
         self.repin()
         return True
 
