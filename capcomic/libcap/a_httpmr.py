@@ -172,7 +172,7 @@ class FarmerXP(FarmerBase):
         result = dict()
         pinlist = [k for k in self.bean.keys() if k.find(r'pin.') != -1]
         for node in t_xpath.xselects(ctx[r'xp'], self.bean[r'param.select']):
-            nd = {pin: self.xnode(t_xpath.xnode(node, self.bean[pin])) for pin in pinlist}
+            nd = {pin: self.fixnode(t_xpath.xnode(node, self.bean[pin])) for pin in pinlist}
             if not nd:
                 continue
             for k in joinlist:
@@ -186,9 +186,14 @@ class FarmerXP(FarmerBase):
         return True
 
     @staticmethod
-    def xnode(txt):
-        txt = re.sub(r'(<.*>)', r'', txt)
-        return txt
+    def fixnode(txt):
+        if not txt:
+            return txt
+        result = txt
+        result = re.sub('(<.*>)', r'', result)
+        result = re.sub('(\r\n)', r'', result)
+        result = re.sub('(\n)', r'', result)
+        return result
 
 #######################################################################################################
 
