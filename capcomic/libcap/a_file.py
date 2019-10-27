@@ -37,7 +37,7 @@ async def fset(file, content, fmode=r'wb'):
 
 #######################################################################################################
 
-async def fmkd(file):
+def fmkd(file):
     result = None
     try:
         os.makedirs(file, exist_ok=True)
@@ -47,7 +47,7 @@ async def fmkd(file):
 
 #######################################################################################################
 
-async def fsize(file):
+def fsize(file):
     result = None
     try:
         if not os.path.isdir(file):
@@ -66,7 +66,7 @@ def fexists(file):
 
 #######################################################################################################
 
-async def frm(file):
+def frm(file):
     result = None
     try:
         if not fexists(file):
@@ -83,7 +83,7 @@ async def frm(file):
 
 #######################################################################################################
 
-async def frmempty(path):
+def frmempty(path):
     result = list()
     try:
         while True:
@@ -99,7 +99,7 @@ async def frmempty(path):
 
 #######################################################################################################
 
-async def fmatch(file, mode):
+def fmatch(file, mode):
     result = None
     try:
         ma = re.compile(mode)

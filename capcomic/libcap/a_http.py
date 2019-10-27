@@ -37,7 +37,7 @@ async def wsavefile(ctx, _):
         clen = int(ctx[r'Content-Length'])
     if not clen:
         raise Exception()
-    if not await a_file.fmkd(os.path.dirname(ctx[r'file'])):
+    if not a_file.fmkd(os.path.dirname(ctx[r'file'])):
         raise Exception()
     flen = await a_file.fset(ctx[r'file'], ctx[r'content'])
     if not flen:
