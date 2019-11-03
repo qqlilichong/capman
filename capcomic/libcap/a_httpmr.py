@@ -9,20 +9,20 @@ def meta():
 
 #######################################################################################################
 
-def farm(beans, metas):
+async def farm(context, beans, metas):
     async def farmbus(bs, tasks):
         result = list()
         for ctx in await a_tool.tmr(*tasks):
             result += bs.transform(ctx[r'farmer'])
         return result
 
-    async def mainbus(context):
+    async def beanbus():
         bs = t_beans.Beans(beans, metas, context)
         tasks = bs.starts()
         while tasks:
             tasks = await farmbus(bs, tasks)
 
-    a_tool.tloop(a_http.hsession(mainbus))
+    await beanbus()
 
 #######################################################################################################
 
@@ -87,34 +87,8 @@ class FarmerBase:
                 val = self.reparamval(k)
                 result[val] = {v: val}
 
-        def user_lastfill():
-            lastitem = None
-            for i in self.pin.values():
-                lastitem = i
-            if not lastitem:
-                return
-
-            pid = None
-            redata = None
-            review = None
-            lastnum = 0
-            reidx = int(bact.getparam(r'reidx', 0))
-            uid = bact.getparam(r'uid', r'pin.id')
-            for k, v in bact.view.items():
-                pid = lastitem[uid]
-                lastnum = int(re.findall(k, pid)[reidx])
-                review = v
-                redata = v % lastnum
-            if not lastnum:
-                return
-
-            for i in range(1, lastnum):
-                val = pid.replace(redata, review % i)
-                result[val] = {uid: val}
-
         extpmap = {
             r'reparamval': user_reparamval,
-            r'lastfill': user_lastfill,
         }
 
         kid = r'extp.%s' % tag

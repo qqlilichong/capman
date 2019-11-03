@@ -106,11 +106,11 @@ def __request_headers():
         r'User-Agent': ua
     }
 
-async def hsession(task, headers=None, timeout=None, sema=128):
+async def hsession(task, headers=None, timeout=None, sema=32):
     if not headers:
         headers = __request_headers()
     if not timeout:
-        timeout = aiohttp.ClientTimeout(total=10)
+        timeout = aiohttp.ClientTimeout(total=20)
     async with aiohttp.ClientSession() as s:
         await task({
             r'session': s,

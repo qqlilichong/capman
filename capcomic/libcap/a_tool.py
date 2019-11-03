@@ -1,12 +1,15 @@
 
 #######################################################################################################
 
-import sys
 import uuid
+import copy
+import shelve
 import hashlib
 import asyncio
 import inspect
+import multiprocessing
 from urllib.parse import urljoin
+from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 
 #######################################################################################################
 
@@ -73,5 +76,74 @@ def fixpath(path):
     path = path.strip(r'.')
     path = path.strip()
     return path
+
+#######################################################################################################
+
+def dc(obj):
+    return copy.deepcopy(obj)
+
+#######################################################################################################
+
+def mrmt(dlist, handler, maxps=32):
+    result = None
+    try:
+        ps = len(dlist)
+        if not ps:
+            result = []
+            return
+
+        if ps > maxps:
+            ps = maxps
+
+        with ThreadPoolExecutor(max_workers=ps) as ios:
+            plist = [ios.submit(handler, d) for d in dlist]
+            wait(plist, return_when=ALL_COMPLETED)
+            result = [p.result() for p in plist]
+    finally:
+        return result
+
+#######################################################################################################
+
+def mrmp(dlist, handler, maxps=32):
+    result = None
+    try:
+        ps = len(dlist)
+        if not ps:
+            result = []
+            return
+
+        if ps > maxps:
+            ps = maxps
+
+        ios = multiprocessing.Pool(ps)
+        plist = [ios.apply_async(handler, (d,)) for d in dlist]
+        ios.close()
+        ios.join()
+        result = [p.get() for p in plist]
+    finally:
+        return result
+
+#######################################################################################################
+
+def dbsave(datafile, key, value):
+    result = None
+    try:
+        db = shelve.open(datafile, writeback=True)
+        db[key] = value
+        db.close()
+        result = True
+    finally:
+        return result
+
+#######################################################################################################
+
+def dbload(datafile, key):
+    result = None
+    try:
+        db = shelve.open(datafile)
+        result = db[key].copy()
+        db.close()
+    finally:
+        return result
 
 #######################################################################################################
