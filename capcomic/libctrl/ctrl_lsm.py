@@ -82,7 +82,7 @@ def control(mb, beans, metas):
             ibeans[mainbean][r'cookie.saveroot'] = prot.saveroot
             dlist.append((ibeans, metas))
 
-    for r in a_tool.mrmp(dlist, metas[mb[r'view']], 8):
+    for r in a_tool.mrmp(dlist, metas[mb[r'view']], 6):
         if not r:
             raise Exception(r'Error.')
 
