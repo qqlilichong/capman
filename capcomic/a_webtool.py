@@ -19,11 +19,8 @@ def mainbus(config):
     ini = t_ptree.PTini()
     ini.read(config)
     beans = {beanid: ini[beanid].copy() for beanid in ini.smatch(r'(bean.\w+)').keys()}
-    mainbean = ini[r'main'][r'bean']
-    view = metas[ini[r'main'][r'view']]
-    control = metas[ini[r'main'][r'control']]
-    control(mainbean, beans, metas, view)
-
+    mb = ini[r'main']
+    metas[mb[r'control']](mb, beans, metas)
     print(r'runtime : %s' % (time.time() - time_begin))
 
 #######################################################################################################
