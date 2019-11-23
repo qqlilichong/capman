@@ -70,10 +70,20 @@ class FarmerBase:
             for pin in self.pin.values():
                 pin[v] = re.findall(bact.act, pin[k])[reidx]
 
+    def repinvaluser(self, bact):
+        um = self.usermap()
+        if bact.act not in um.keys():
+            return
+        for k, v in bact.view.items():
+            for pin in self.pin.values():
+                pin[v] = um[bact.act](pin[k])
+
     def repinval(self, key):
         bact = t_beans.BeanAct(self.bean[key])
         if bact.isprore():
             self.repinvalre(bact)
+        elif bact.isprouser():
+            self.repinvaluser(bact)
 
     def repin(self):
         kid = r'repin.'
@@ -81,16 +91,26 @@ class FarmerBase:
             if key.startswith(kid):
                 self.repinval(key)
 
-    def extpin(self, tag):
-        def user_reparamval():
+    def usermap(self):
+        def user_reparamval(bact, result):
             for k, v in bact.view.items():
                 val = self.reparamval(k)
                 result[val] = {v: val}
 
-        extpmap = {
+        def user_fixtitle(text):
+            text = text.replace('\\', r'')
+            text = text.replace('/', r'')
+            return text
+
+        um = {
             r'reparamval': user_reparamval,
+            r'fixtitle': user_fixtitle,
         }
 
+        return um
+
+    def extpin(self, tag):
+        um = self.usermap()
         kid = r'extp.%s' % tag
         result = dict()
         for key in self.bean.keys():
@@ -99,8 +119,8 @@ class FarmerBase:
             bact = t_beans.BeanAct(self.bean[key])
             if not bact.isprouser():
                 continue
-            if bact.act in extpmap.keys():
-                extpmap[bact.act]()
+            if bact.act in um.keys():
+                um[bact.act](bact, result)
         self.pin.update(result)
 
     def skip(self, ctx):

@@ -12,9 +12,9 @@ def meta():
 
 def products():
     return {
-        # r'109': {
-        #     r'name': r'头条女神 Goddes',
-        # },
+        r'109': {
+            r'name': r'头条女神 Goddes',
+        },
 
         r'39': {
             r'name': r'推女郎 TuiGirl',
