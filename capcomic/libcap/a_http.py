@@ -111,7 +111,7 @@ async def hsession(task, headers=None, timeout=None, sema=32):
         headers = __request_headers()
     if not timeout:
         timeout = aiohttp.ClientTimeout(total=20)
-    async with aiohttp.ClientSession() as s:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as s:
         await task({
             r'session': s,
             r'semaphore': asyncio.Semaphore(sema),
