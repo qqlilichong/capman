@@ -1,6 +1,7 @@
 
 #######################################################################################################
 
+import os
 import uuid
 import copy
 import shelve
@@ -14,9 +15,7 @@ from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 #######################################################################################################
 
 async def tmr(*tasks):
-    taskqueue = list()
-    for task in tasks:
-        taskqueue.append(asyncio.create_task(task))
+    taskqueue = [asyncio.create_task(t) for t in tasks]
     return await asyncio.gather(*taskqueue)
 
 #######################################################################################################
@@ -145,5 +144,10 @@ def dbload(datafile, key):
         db.close()
     finally:
         return result
+
+#######################################################################################################
+
+def absj(*fl):
+    return os.path.abspath(os.path.join(*fl))
 
 #######################################################################################################

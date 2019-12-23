@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import aiofiles
+from libcap import a_tool
 
 #######################################################################################################
 
@@ -99,15 +100,16 @@ def frmempty(path):
 
 #######################################################################################################
 
-def fmatch(file, mode):
+def fmatch(file, mode, flags=re.IGNORECASE):
     result = None
     try:
-        ma = re.compile(mode)
+        ma = re.compile(mode, flags=flags)
         fl = list()
-        for filename in os.listdir(file):
-            if ma.match(filename):
-                fl.append(os.path.join(file, filename))
-
+        for root, dirs, files in os.walk(file):
+            for filename in files:
+                filename = a_tool.absj(root, filename)
+                if ma.match(filename):
+                    fl.append(filename)
         result = fl
     finally:
         return result
