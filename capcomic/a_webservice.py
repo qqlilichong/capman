@@ -46,7 +46,7 @@ def mainbus():
     app = web.Application()
     app.router.add_get(r'/findsnf', a_findsnf)
     app.router.add_get(r'/runbat', a_runbat)
-    web.run_app(app, host=r'localhost', port=8080)
+    web.run_app(app, host=r'0.0.0.0', port=8080)
 
 #######################################################################################################
 
