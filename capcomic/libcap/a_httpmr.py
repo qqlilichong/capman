@@ -9,20 +9,20 @@ def meta():
 
 #######################################################################################################
 
-def farm(beans, metas):
+async def farm(context, beans, metas):
     async def farmbus(bs, tasks):
         result = list()
         for ctx in await a_tool.tmr(*tasks):
             result += bs.transform(ctx[r'farmer'])
         return result
 
-    async def mainbus(context):
+    async def beanbus():
         bs = t_beans.Beans(beans, metas, context)
         tasks = bs.starts()
         while tasks:
             tasks = await farmbus(bs, tasks)
 
-    a_tool.tloop(a_http.hsession(mainbus))
+    await beanbus()
 
 #######################################################################################################
 
@@ -47,8 +47,8 @@ class FarmerBase:
             if key.startswith(kid):
                 headers[key.replace(kid, r'')] = val
 
-    def reparamval(self, key):
-        paramlist = self.bean[key].split(r'|')
+    def reparamval(self, data):
+        paramlist = data.split(r'|')
         result = list()
         for p in paramlist:
             for k in re.findall(r'<(.*?)>', p):
@@ -61,22 +61,29 @@ class FarmerBase:
         result = dict()
         for key in self.bean.keys():
             if key.startswith(kid):
-                result[key.replace(kid, r'')] = self.reparamval(key)
+                result[key.replace(kid, r'')] = self.reparamval(self.bean[key])
         self.bean.update(result)
 
     def repinvalre(self, bact):
-        reidx = 0
-        if r'reidx' in bact.param:
-            reidx = int(bact.param[r'reidx'])
-
+        reidx = int(bact.getparam(r'reidx', 0))
         for k, v in bact.view.items():
             for pin in self.pin.values():
                 pin[v] = re.findall(bact.act, pin[k])[reidx]
+
+    def repinvaluser(self, bact):
+        um = self.usermap()
+        if bact.act not in um.keys():
+            return
+        for k, v in bact.view.items():
+            for pin in self.pin.values():
+                pin[v] = um[bact.act](pin[k])
 
     def repinval(self, key):
         bact = t_beans.BeanAct(self.bean[key])
         if bact.isprore():
             self.repinvalre(bact)
+        elif bact.isprouser():
+            self.repinvaluser(bact)
 
     def repin(self):
         kid = r'repin.'
@@ -84,13 +91,36 @@ class FarmerBase:
             if key.startswith(kid):
                 self.repinval(key)
 
-    def extpin(self):
-        kid = r'extp.'
+    def usermap(self):
+        def user_reparamval(bact, result):
+            for k, v in bact.view.items():
+                val = self.reparamval(k)
+                result[val] = {v: val}
+
+        def user_fixtitle(text):
+            text = text.replace('\\', r'')
+            text = text.replace('/', r'')
+            return text
+
+        um = {
+            r'reparamval': user_reparamval,
+            r'fixtitle': user_fixtitle,
+        }
+
+        return um
+
+    def extpin(self, tag):
+        um = self.usermap()
+        kid = r'extp.%s' % tag
         result = dict()
         for key in self.bean.keys():
-            if key.startswith(kid):
-                pid = self.reparamval(key)
-                result[pid] = {r'pin.id': pid}
+            if not key.startswith(kid):
+                continue
+            bact = t_beans.BeanAct(self.bean[key])
+            if not bact.isprouser():
+                continue
+            if bact.act in um.keys():
+                um[bact.act](bact, result)
         self.pin.update(result)
 
     def skip(self, ctx):
@@ -136,17 +166,28 @@ class FarmerXP(FarmerBase):
         result = dict()
         pinlist = [k for k in self.bean.keys() if k.find(r'pin.') != -1]
         for node in t_xpath.xselects(ctx[r'xp'], self.bean[r'param.select']):
-            nd = {pin: t_xpath.xnode(node, self.bean[pin]) for pin in pinlist}
+            nd = {pin: self.fixnode(t_xpath.xnode(node, self.bean[pin])) for pin in pinlist}
             if not nd:
                 continue
             for k in joinlist:
                 nd[k] = a_tool.tjoinurl(ctx[r'url'], nd[k])
             result[nd[r'pin.id']] = nd
 
-        self.extpin()
+        self.extpin(r'addhead')
         self.pin.update(result)
+        self.extpin(r'addtail')
         self.repin()
         return True
+
+    @staticmethod
+    def fixnode(txt):
+        if not txt:
+            return txt
+        result = txt
+        result = re.sub('(<.*>)', r'', result)
+        result = re.sub('(\r\n)', r'', result)
+        result = re.sub('(\n)', r'', result)
+        return result
 
 #######################################################################################################
 

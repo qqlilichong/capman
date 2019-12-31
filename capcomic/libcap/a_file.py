@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import aiofiles
+from libcap import a_tool
 
 #######################################################################################################
 
@@ -37,7 +38,7 @@ async def fset(file, content, fmode=r'wb'):
 
 #######################################################################################################
 
-async def fmkd(file):
+def fmkd(file):
     result = None
     try:
         os.makedirs(file, exist_ok=True)
@@ -47,7 +48,7 @@ async def fmkd(file):
 
 #######################################################################################################
 
-async def fsize(file):
+def fsize(file):
     result = None
     try:
         if not os.path.isdir(file):
@@ -66,7 +67,7 @@ def fexists(file):
 
 #######################################################################################################
 
-async def frm(file):
+def frm(file):
     result = None
     try:
         if not fexists(file):
@@ -83,7 +84,7 @@ async def frm(file):
 
 #######################################################################################################
 
-async def frmempty(path):
+def frmempty(path):
     result = list()
     try:
         while True:
@@ -99,15 +100,16 @@ async def frmempty(path):
 
 #######################################################################################################
 
-async def fmatch(file, mode):
+def fmatch(file, mode, flags=re.IGNORECASE):
     result = None
     try:
-        ma = re.compile(mode)
+        ma = re.compile(mode, flags=flags)
         fl = list()
-        for filename in os.listdir(file):
-            if ma.match(filename):
-                fl.append(os.path.join(file, filename))
-
+        for root, dirs, files in os.walk(file):
+            for filename in files:
+                filename = a_tool.absj(root, filename)
+                if ma.match(filename):
+                    fl.append(filename)
         result = fl
     finally:
         return result

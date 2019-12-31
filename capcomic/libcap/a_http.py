@@ -37,7 +37,7 @@ async def wsavefile(ctx, _):
         clen = int(ctx[r'Content-Length'])
     if not clen:
         raise Exception()
-    if not await a_file.fmkd(os.path.dirname(ctx[r'file'])):
+    if not a_file.fmkd(os.path.dirname(ctx[r'file'])):
         raise Exception()
     flen = await a_file.fset(ctx[r'file'], ctx[r'content'])
     if not flen:
@@ -93,7 +93,7 @@ async def hnull(ctx):
 #######################################################################################################
 
 async def __logbus(ctx, info, level=5):
-    print(r'[%s]{%s}: %s' % (level, ctx[r'url'], info))
+    print(r'[%s][%s]{%s}: %s' % (level, ctx[r'status'], ctx[r'url'], info))
 
 async def __exceptbus(ctx):
     await ctx[r'log'](ctx, ctx[r'workstack'])
@@ -106,12 +106,12 @@ def __request_headers():
         r'User-Agent': ua
     }
 
-async def hsession(task, headers=None, timeout=None, sema=200):
+async def hsession(task, headers=None, timeout=None, sema=32):
     if not headers:
         headers = __request_headers()
     if not timeout:
         timeout = aiohttp.ClientTimeout(total=20)
-    async with aiohttp.ClientSession() as s:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as s:
         await task({
             r'session': s,
             r'semaphore': asyncio.Semaphore(sema),

@@ -35,11 +35,19 @@ class BeanAct:
             self.pro = acts[0]
             self.act = acts[1]
 
+    def getparam(self, key, defval):
+        if key in self.param:
+            return key.param[key]
+        return defval
+
     def isprobl(self):
         return self.pro == r'bl'
 
     def isprore(self):
         return self.pro == r're'
+
+    def isprouser(self):
+        return self.pro == r'user'
 
 #######################################################################################################
 

@@ -209,7 +209,7 @@ class CFSession:
 
     @staticmethod
     def reset(url):
-        CFSession.__cf = cfscrape.create_scraper()
+        CFSession.__cf = cfscrape.create_scraper(delay=10)
         return CFSession.__cf.get(url)
 
 #######################################################################
@@ -234,7 +234,8 @@ def http_get(url, headers=None, err=None):
                                 headers=def_headers,
                                 cookies=cookies)
         elif r't_cloudflare' in os.environ.keys():
-            resp = CFSession.session().get(url)
+            resp = CFSession.session().get(url,
+                                           timeout=timeout)
         else:
             resp = requests.get(url,
                                 timeout=timeout,
