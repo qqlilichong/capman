@@ -80,7 +80,7 @@ def capman(url, path, rm, fmt, fmtf, rev):
     result = None
     try:
         lis = list()
-        for link in t_webtool.bs4get(url).find(r'div', id=r'chapterlistload').findAll(r'a'):
+        for link in t_webtool.bs4get(url).find(r'ul', r'view-win-list detail-list-select').findAll(r'a'):
             title = link.get_text()
             if re.match(rm, title):
                 lis.append(t_webtool.http_urljoin(url, link[r'href']))
