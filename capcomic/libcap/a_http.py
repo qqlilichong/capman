@@ -2,9 +2,11 @@
 #######################################################################################################
 
 import os
+import random
 import asyncio
 import aiohttp
 from libcap import t_xpath, a_tool, a_file
+from fake_useragent import UserAgent
 
 def meta():
     return a_tool.metatbl(globals())
@@ -51,6 +53,7 @@ async def wsavefile(ctx, _):
 async def __hget(ctx, *workflow):
     try:
         async with ctx[r'semaphore']:
+            await asyncio.sleep(random.uniform(10.1, 12.2))
             async with ctx[r'session'].get(ctx[r'url'],
                                            headers=ctx[r'headers'],
                                            timeout=ctx[r'timeout']) as r:
@@ -98,17 +101,9 @@ async def __logbus(ctx, info, level=5):
 async def __exceptbus(ctx):
     await ctx[r'log'](ctx, ctx[r'workstack'])
 
-def __request_headers():
-    ua = r'Mozilla/5.0 (Windows NT 6.1; WOW64)'
-    ua += r' AppleWebKit/537.36 (KHTML, like Gecko)'
-    ua += r' Chrome/63.0.3239.26 Safari/537.36 Core/1.63.5702.400 QQBrowser/10.2.1893.400'
-    return {
-        r'User-Agent': ua
-    }
-
-async def hsession(task, headers=None, timeout=None, sema=32):
+async def hsession(task, headers=None, timeout=None, sema=1):
     if not headers:
-        headers = __request_headers()
+        headers = {r'User-Agent': str(UserAgent(use_cache_server=False).random)}
     if not timeout:
         timeout = aiohttp.ClientTimeout(total=20)
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as s:
