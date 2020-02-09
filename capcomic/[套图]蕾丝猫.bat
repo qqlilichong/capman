@@ -1,0 +1,2 @@
+python loader_meitulu.py
+pause
