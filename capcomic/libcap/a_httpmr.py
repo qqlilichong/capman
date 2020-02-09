@@ -70,58 +70,33 @@ class FarmerBase:
             for pin in self.pin.values():
                 pin[v] = re.findall(bact.act, pin[k])[reidx]
 
-    def repinvaluser(self, bact):
-        um = self.usermap()
-        if bact.act not in um.keys():
-            return
-        for k, v in bact.view.items():
-            for pin in self.pin.values():
-                pin[v] = um[bact.act](pin[k])
+    def runuc(self, bact):
+        if not bact.isprouc():
+            return None
+        return self.bean[r'meta.metas'][bact.act]({
+            r'farmer': self,
+            r'bact': bact,
+        })
 
     def repinval(self, key):
         bact = t_beans.BeanAct(self.bean[key])
         if bact.isprore():
             self.repinvalre(bact)
-        elif bact.isprouser():
-            self.repinvaluser(bact)
+        else:
+            self.runuc(bact)
 
     def repin(self):
-        kid = r'repin.'
         for key in self.bean.keys():
-            if key.startswith(kid):
+            if key.startswith(r'repin.'):
                 self.repinval(key)
 
-    def usermap(self):
-        def user_reparamval(bact, result):
-            for k, v in bact.view.items():
-                val = self.reparamval(k)
-                result[val] = {v: val}
-
-        def user_fixtitle(text):
-            text = text.replace('\\', r'')
-            text = text.replace('/', r'')
-            return text
-
-        um = {
-            r'reparamval': user_reparamval,
-            r'fixtitle': user_fixtitle,
-        }
-
-        return um
-
     def extpin(self, tag):
-        um = self.usermap()
         kid = r'extp.%s' % tag
-        result = dict()
         for key in self.bean.keys():
             if not key.startswith(kid):
                 continue
             bact = t_beans.BeanAct(self.bean[key])
-            if not bact.isprouser():
-                continue
-            if bact.act in um.keys():
-                um[bact.act](bact, result)
-        self.pin.update(result)
+            self.runuc(bact)
 
     def skip(self, ctx):
         if r'param.skip' not in self.bean.keys():

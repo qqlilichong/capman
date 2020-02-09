@@ -46,8 +46,8 @@ class BeanAct:
     def isprore(self):
         return self.pro == r're'
 
-    def isprouser(self):
-        return self.pro == r'user'
+    def isprouc(self):
+        return self.pro == r'uc'
 
 #######################################################################################################
 
@@ -64,6 +64,7 @@ class Beans:
         bean = self.beans[beanid].copy()
         bean[r'param.beanid'] = beanid
         bean[r'param.context'] = self.context
+        bean[r'meta.metas'] = self.metas
         return bean
 
     def newtask(self, bean):
