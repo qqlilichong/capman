@@ -262,7 +262,7 @@ def plist(mb):
 #######################################################################################################
 
 async def hgetb(_):
-    await asyncio.sleep(0.2)
+    await asyncio.sleep(0.5)
 
 def control(mb, beans, metas):
     dlist = list()
