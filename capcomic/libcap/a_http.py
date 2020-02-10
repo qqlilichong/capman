@@ -2,7 +2,6 @@
 #######################################################################################################
 
 import os
-import random
 import asyncio
 import aiohttp
 from libcap import t_xpath, a_tool, a_file
@@ -53,7 +52,7 @@ async def wsavefile(ctx, _):
 async def __hget(ctx, *workflow):
     try:
         async with ctx[r'semaphore']:
-            await asyncio.sleep(random.uniform(10.1, 12.2))
+            await ctx[r'hgetb'](ctx)
             async with ctx[r'session'].get(ctx[r'url'],
                                            headers=ctx[r'headers'],
                                            timeout=ctx[r'timeout']) as r:
@@ -101,11 +100,23 @@ async def __logbus(ctx, info, level=5):
 async def __exceptbus(ctx):
     await ctx[r'log'](ctx, ctx[r'workstack'])
 
-async def hsession(task, headers=None, timeout=None, sema=1):
+async def __hgetb(_):
+    pass
+
+async def hsession(task,
+                   headers=None,
+                   timeout=None,
+                   sema=32,
+                   hgetb=None):
+    # Default params.
     if not headers:
         headers = {r'User-Agent': str(UserAgent(use_cache_server=False).random)}
     if not timeout:
         timeout = aiohttp.ClientTimeout(total=20)
+    if not hgetb:
+        hgetb = __hgetb
+
+    # Start session.
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as s:
         await task({
             r'session': s,
@@ -119,6 +130,7 @@ async def hsession(task, headers=None, timeout=None, sema=1):
             r'workstack': r'main',
             r'log': __logbus,
             r'except': __exceptbus,
+            r'hgetb': hgetb,
         })
 
 #######################################################################################################
