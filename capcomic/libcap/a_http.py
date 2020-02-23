@@ -110,7 +110,9 @@ async def hsession(task,
                    hgetb=None):
     # Default params.
     if not headers:
-        headers = {r'User-Agent': str(UserAgent(use_cache_server=False, verify_ssl=False).random)}
+        headers = {r'User-Agent': str(UserAgent(use_cache_server=False,
+                                                verify_ssl=False,
+                                                path=r'fake_useragent.json').random)}
     if not timeout:
         timeout = aiohttp.ClientTimeout(total=20)
     if not hgetb:
