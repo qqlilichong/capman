@@ -265,7 +265,6 @@ async def hgetb(_):
     await asyncio.sleep(0.5)
 
 def control(mb, beans, metas):
-    dlist = list()
     for prot in plist(mb):
         for page in prot.pages:
             ibeans = a_tool.dc(beans)
@@ -273,15 +272,7 @@ def control(mb, beans, metas):
             ibeans[mainbean][r'meta.main'] = r'true'
             ibeans[mainbean][r'param.url'] = page
             ibeans[mainbean][r'cookie.saveroot'] = prot.saveroot
-            dlist.append((ibeans, metas, {
-                r'sema': 1,
-                r'hgetb': hgetb,
-            }))
-
-    for r in a_tool.mrmp(dlist, metas[mb[r'view']], 1):
-        if not r:
-            raise Exception(r'Error.')
-
+            a_tool.mrmp([(ibeans, metas, {r'sema': 1, r'hgetb': hgetb})], metas[mb[r'view']], 1)
     return True
 
 #######################################################################################################
