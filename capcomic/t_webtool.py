@@ -329,6 +329,10 @@ def bs4get(url):
 
 #######################################################################
 
+class MyConfigParser(configparser.ConfigParser):
+    def optionxform(self, optionstr):
+        return optionstr
+
 class IniDict:
     def __init__(self, enc=r'utf-8'):
         self.__data = dict()
@@ -344,7 +348,7 @@ class IniDict:
     def read(self, filename):
         result = None
         try:
-            cfg = configparser.ConfigParser()
+            cfg = MyConfigParser()
             cfg.read(filename, encoding=self.__enc)
             result = self.__update(cfg)
         finally:
