@@ -34,7 +34,7 @@ def loader_main():
     cfg = t_webtool.IniDict()
     proot = os.path.dirname(__file__)
     cfg.read(os.path.join(proot, r'configer_jmakers.ini'))
-    proot = os.path.join(proot, cfg[r'CONFIG'][r'%s_path'] % platform.system())
+    proot = os.path.join(proot, cfg[r'CONFIG'][r'%s_path' % platform.system()])
     website = cfg[r'CONFIG'][r'site']
     for maker, ma in cfg.resection(r'^JMAKER_(\w+)$').items():
         print(r'$$$$ start CFS $$$$')
