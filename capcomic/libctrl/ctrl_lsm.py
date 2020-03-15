@@ -273,6 +273,7 @@ def control(mb, beans, metas):
             ibeans[mainbean][r'meta.main'] = r'true'
             ibeans[mainbean][r'param.url'] = page
             ibeans[mainbean][r'cookie.saveroot'] = prot.saveroot
+            print(r'$$$$ mrmp $$$$ : %s' % page)
             a_tool.mrmp([(ibeans, metas, {r'sema': 1, r'hgetb': hgetb})], metas[mb[r'view']], 1)
     return True
 
