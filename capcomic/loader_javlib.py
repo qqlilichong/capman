@@ -37,14 +37,13 @@ def loader_main():
     proot = os.path.join(proot, cfg[r'CONFIG'][r'%s_path' % platform.system()])
     website = cfg[r'CONFIG'][r'site']
     for maker, ma in cfg.resection(r'^JMAKER_(\w+)$').items():
-        print(maker)
-        # print(r'$$$$ start CFS $$$$')
-        # update_cookie(website)
-        # print(r'$$$$ end CFS $$$$')
-        # t_javlib.start_collect(proot,
-        #                        dbinfo,
-        #                        ma.group(1),
-        #                        t_webtool.http_urljoin(website, cfg[maker][r'url']))
+        print(r'$$$$ start CFS $$$$')
+        update_cookie(website)
+        print(r'$$$$ end CFS $$$$')
+        t_javlib.start_collect(proot,
+                               dbinfo,
+                               ma.group(1),
+                               t_webtool.http_urljoin(website, cfg[maker][r'url']))
 
 #######################################################################
 
