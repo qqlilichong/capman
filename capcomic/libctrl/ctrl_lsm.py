@@ -4,6 +4,7 @@
 import os
 import re
 import asyncio
+import platform
 from libcap import a_tool, a_http, t_xpath
 
 def meta():
@@ -217,7 +218,7 @@ class Prot:
         self.mb = mb
         self.pid = pid
         self.url = self.geturl(1)
-        self.saveroot = os.path.join(mb[r'saveroot'], info[r'name'])
+        self.saveroot = os.path.join(mb[r'saveroot.%s' % platform.system()], info[r'name'])
         self.pages = list()
 
     def geturl(self, idx):
