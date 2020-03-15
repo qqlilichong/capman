@@ -55,7 +55,8 @@ async def __hget(ctx, *workflow):
             await ctx[r'hgetb'](ctx)
             async with ctx[r'session'].get(ctx[r'url'],
                                            headers=ctx[r'headers'],
-                                           timeout=ctx[r'timeout']) as r:
+                                           timeout=ctx[r'timeout'],
+                                           verify_ssl=False) as r:
                 ctx[r'status'] = r.status
                 if ctx[r'status'] != ctx[r'okcode']:
                     raise Exception()
