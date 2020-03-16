@@ -49,46 +49,27 @@ async def wsavefile(ctx, _):
 
 #######################################################################################################
 
-# async def __hget(ctx, *workflow):
-#     try:
-#         async with ctx[r'semaphore']:
-#             await ctx[r'hgetb'](ctx)
-#             async with ctx[r'session'].get(ctx[r'url'],
-#                                            headers=ctx[r'headers'],
-#                                            timeout=ctx[r'timeout'],
-#                                            verify_ssl=False) as r:
-#                 ctx[r'status'] = r.status
-#                 if ctx[r'status'] != ctx[r'okcode']:
-#                     raise Exception()
-#
-#                 for work in workflow:
-#                     ctx[r'workstack'] = work.__name__
-#                     if not await work(ctx, r):
-#                         break
-#
-#                 ctx[r'ok'] = True
-#     except:
-#         await ctx[r'except'](ctx)
-#     finally:
-#         return ctx
-
 async def __hget(ctx, *workflow):
-    async with ctx[r'semaphore']:
-        await ctx[r'hgetb'](ctx)
-        async with ctx[r'session'].get(ctx[r'url'],
-                                       headers=ctx[r'headers'],
-                                       timeout=ctx[r'timeout'],
-                                       verify_ssl=False) as r:
-            ctx[r'status'] = r.status
-            if ctx[r'status'] != ctx[r'okcode']:
-                raise Exception()
+    try:
+        async with ctx[r'semaphore']:
+            await ctx[r'hgetb'](ctx)
+            async with ctx[r'session'].get(ctx[r'url'],
+                                           headers=ctx[r'headers'],
+                                           timeout=ctx[r'timeout'],
+                                           verify_ssl=False) as r:
+                ctx[r'status'] = r.status
+                if ctx[r'status'] != ctx[r'okcode']:
+                    raise Exception()
 
-            for work in workflow:
-                ctx[r'workstack'] = work.__name__
-                if not await work(ctx, r):
-                    break
+                for work in workflow:
+                    ctx[r'workstack'] = work.__name__
+                    if not await work(ctx, r):
+                        break
 
-            ctx[r'ok'] = True
+                ctx[r'ok'] = True
+    except:
+        await ctx[r'except'](ctx)
+    finally:
         return ctx
 
 async def hget(ctx, *workflow):
