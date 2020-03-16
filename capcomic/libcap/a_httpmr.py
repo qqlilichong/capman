@@ -109,10 +109,6 @@ class FarmerBase:
         await ctx[r'log'](ctx, self.debug)
         ctx[r'retry'] = True
 
-    @staticmethod
-    async def logbus(ctx, log):
-        await ctx[r'log'](ctx, log, 1)
-
 #######################################################################################################
 
 class FarmerXP(FarmerBase):
