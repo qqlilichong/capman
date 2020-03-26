@@ -1,7 +1,7 @@
 
 #######################################################################################################
 
-import time
+import sys
 from libcap import t_ptree, a_http, a_httpmr
 from libctrl import view_default, ctrl_lsm, ctrl_mtr
 from libuser import uc_fixtitle, uc_newpin
@@ -9,7 +9,7 @@ from libuser import uc_fixtitle, uc_newpin
 #######################################################################################################
 
 def mainbus(config):
-    time_begin = time.time()
+    sys.stderr.write('running\n')
 
     metas = dict()
     metas.update(a_http.meta())
@@ -27,7 +27,8 @@ def mainbus(config):
     beans = {beanid: ini[beanid].copy() for beanid in ini.smatch(r'(bean.\w+)').keys()}
     mb = ini[r'main']
     metas[mb[r'control']](mb, beans, metas)
-    print(r'runtime : %s' % (time.time() - time_begin))
+
+    sys.stderr.write('bye\n')
 
 #######################################################################################################
 
