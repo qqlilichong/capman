@@ -247,6 +247,9 @@ def http_get(url, headers=None, err=None):
             return
 
         result = resp
+    except requests.exceptions.RequestException as e:
+        result = str(e)
+        print(r'[%s] : %s' % (url, result))
     finally:
         return result
 
@@ -266,6 +269,14 @@ def http_download(url, filename, headers=None, err=None, log=None):
         resp = http_get(url, headers, err)
         if not resp:
             plog(r'not resp')
+            return
+
+        if isinstance(resp, str):
+            if resp.index(r'ConnectionResetError(10054'):
+                result = 0
+                plog(r'ConnectionResetError')
+                return
+            plog(r'not resp exception')
             return
 
         len1 = int(resp.headers.get(r'content-length'))
