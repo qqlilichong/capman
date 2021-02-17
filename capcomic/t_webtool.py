@@ -276,6 +276,10 @@ def http_download(url, filename, headers=None, err=None, log=None):
                 result = 0
                 plog(r'ConnectionResetError')
                 return
+            if resp.index(r'ConnectionResetError(10060'):
+                result = 0
+                plog(r'ConnectionResetError')
+                return
             plog(r'not resp exception')
             return
 
