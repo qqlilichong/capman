@@ -272,11 +272,11 @@ def http_download(url, filename, headers=None, err=None, log=None):
             return
 
         if isinstance(resp, str):
-            if resp.index(r'ConnectionResetError(10054'):
+            if resp.find(r'ConnectionResetError(10054') != -1:
                 result = 0
                 plog(r'ConnectionResetError')
                 return
-            if resp.index(r'ConnectionResetError(10060'):
+            if resp.find(r'WinError 10060') != -1:
                 result = 0
                 plog(r'ConnectionResetError')
                 return
